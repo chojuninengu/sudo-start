@@ -1,4 +1,3 @@
-```
 'use client';
 
 import { useStore } from '@/lib/store';
@@ -77,13 +76,12 @@ export function PackageManager() {
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
-                            className={`px - 4 py - 2 rounded - lg border - 2 transition - all capitalize ${
-    selectedCategory === cat
-        ? 'border-primary terminal-glow bg-primary/10 terminal-text'
-        : 'border-border hover:border-primary/50'
-} `}
+                            className={`px-4 py-2 rounded-lg border-2 transition-all capitalize ${selectedCategory === cat
+                                    ? 'border-primary terminal-glow bg-primary/10 terminal-text'
+                                    : 'border-border hover:border-primary/50'
+                                }`}
                         >
-                            {cat === 'all' ? '🗂️ All' : `${ categoryIcons[cat] } ${ cat } `}
+                            {cat === 'all' ? '🗂️ All' : `${categoryIcons[cat]} ${cat}`}
                         </button>
                     ))}
                 </div>
@@ -139,9 +137,8 @@ function PackageCard({
     const isAvailable = os ? pkg.platforms[os] : true;
 
     return (
-        <div className={`terminal - card rounded - lg p - 5 space - y - 4 transition - all ${
-    isAvailable ? 'hover:border-primary/50' : 'opacity-60'
-} `}>
+        <div className={`terminal-card rounded-lg p-5 space-y-4 transition-all ${isAvailable ? 'hover:border-primary/50' : 'opacity-60'
+            }`}>
             <div className="flex items-start justify-between">
                 <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -188,14 +185,13 @@ function PackageCard({
             <button
                 onClick={handleAdd}
                 disabled={isInBucket || !isAvailable}
-                className={`w - full py - 2 px - 4 rounded - lg font - medium transition - all flex items - center justify - center gap - 2
-          ${
-    isInBucket
-        ? 'bg-primary/20 text-primary cursor-not-allowed'
-        : !isAvailable
-            ? 'bg-muted text-muted-foreground cursor-not-allowed'
-            : 'bg-primary text-primary-foreground hover:bg-primary/90 terminal-glow'
-} `}
+                className={`w-full py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2
+          ${isInBucket
+                        ? 'bg-primary/20 text-primary cursor-not-allowed'
+                        : !isAvailable
+                            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                            : 'bg-primary text-primary-foreground hover:bg-primary/90 terminal-glow'
+                    }`}
             >
                 {isInBucket ? (
                     <>
