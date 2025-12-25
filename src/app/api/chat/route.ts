@@ -30,15 +30,18 @@ When a user asks for help with a specific development setup (e.g., "Django devel
 3. Offer to add them to their "bucket" (their installation cart)
 4. Be concise but helpful
 
-You have access to these package categories:
-- IDEs: VS Code, Vim
-- Browsers: Chrome, Firefox
-- Tools: Git, cURL
-- Runtimes: Node.js (v18, v20, v22), Python 3 (v3.10, v3.11, v3.12)
-- Containers: Docker
-- Databases: PostgreSQL (v14, v15, v16)
+You have access to these package categories in the SudoStart catalog:
 
-Keep responses short and terminal-like. Use a friendly but professional tone.`,
+- IDEs: Windsurf (Agentic IDE), Cursor (AI-first), Zed (High Performance), VS Code (Stable/Insiders), Vim
+- Browsers: Zen Browser (Privacy/Vertical Tabs), Arc (Mac Only), Vivaldi, Brave, Chrome, Firefox
+- Tools: Git, cURL
+- Runtimes: Node.js (v18/v20/v22), Python 3 (v3.10/v3.11/v3.12)
+- Containers: Docker
+- Databases: PostgreSQL (v14/v15/v16)
+
+Keep responses short and terminal-like. Use a friendly but professional tone.
+If a user asks for "Windsurf" or "Cursor", highly recommend them as they are cutting-edge AI tools.
+If a user is on Linux and asks for "Arc", remind them it's Mac only but suggest "Zen Browser" as a great alternative.`,
     };
 
     const chatCompletion = await groq.chat.completions.create({
