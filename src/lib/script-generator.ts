@@ -24,13 +24,17 @@ export function generateScript(
   lines.push('set -e  # Exit on error');
   lines.push('');
 
-  // Step 2: OS Update Command
+  // Step 2: Header
   lines.push('echo "================================================"');
   lines.push('echo "  SudoStart - System Setup Initialization"');
   lines.push('echo "================================================"');
   lines.push('echo ""');
   lines.push('');
-  
+
+  // Step 3: Dependency Detection & Installation
+  const needsFlatpak = os === 'linux' && packages.some(pkg => requiresFlatpak(pkg));
+  const needsSnap = os === 'linux' && packages.some(pkg => requiresSnap(pkg));
+
   if (os === 'macos') {
     lines.push('# Check if Homebrew is installed');
     lines.push('if ! command -v brew &> /dev/null; then');
@@ -44,11 +48,39 @@ export function generateScript(
     lines.push('echo "Updating package lists..."');
     lines.push('sudo apt-get update -y');
     lines.push('sudo apt-get upgrade -y');
+    lines.push('');
+
+    // Install flatpak if needed
+    if (needsFlatpak) {
+      lines.push('# Install Flatpak (required for some packages)');
+      lines.push('if ! command -v flatpak &> /dev/null; then');
+      lines.push('    echo "Installing Flatpak..."');
+      lines.push('    sudo apt-get install -y flatpak');
+      lines.push('    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo');
+      lines.push('    echo "Note: You may need to restart your system for Flatpak to work properly"');
+      lines.push('else');
+      lines.push('    echo "Flatpak already installed"');
+      lines.push('fi');
+      lines.push('');
+    }
+
+    // Install snap if needed
+    if (needsSnap) {
+      lines.push('# Install Snap (required for some packages)');
+      lines.push('if ! command -v snap &> /dev/null; then');
+      lines.push('    echo "Installing Snap..."');
+      lines.push('    sudo apt-get install -y snapd');
+      lines.push('    sudo systemctl enable --now snapd.socket');
+      lines.push('else');
+      lines.push('    echo "Snap already installed"');
+      lines.push('fi');
+      lines.push('');
+    }
   }
-  
+
   lines.push('');
 
-  // Step 3: Install packages
+  // Step 4: Install packages
   if (packages.length > 0) {
     lines.push('echo ""');
     lines.push('echo "Installing packages..."');
@@ -56,38 +88,43 @@ export function generateScript(
     lines.push('');
 
     packages.forEach((pkg) => {
-      const version = pkg.selectedVersion || '';
-      const versionSuffix = version ? `@${version}` : '';
+      // Get the selected version or use default
+      const versionId = pkg.selectedVersion || pkg.defaultVersion;
+      const version = pkg.versions.find(v => v.id === versionId);
       
-      lines.push(`# Installing ${pkg.name}${version ? ` (version ${version})` : ''}`);
+      if (!version) return;
+
+      lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
       lines.push(`echo "→ Installing ${pkg.name}..."`);
+
+      // Use platform-specific command from the version
+      const installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
       
-      if (os === 'macos') {
-        const installCmd = pkg.macosInstallCmd || `brew install ${pkg.id}${versionSuffix}`;
+      // Skip if command is a comment (e.g., Arc on Linux)
+      if (!installCmd.trim().startsWith('#')) {
         lines.push(installCmd);
-      } else if (os === 'linux') {
-        const installCmd = pkg.linuxInstallCmd || `sudo apt-get install -y ${pkg.id}${versionSuffix}`;
-        lines.push(installCmd);
+      } else {
+        lines.push(`echo "⚠️  ${pkg.name} is not available on ${os.toUpperCase()}"`);
       }
-      
+
       lines.push('');
     });
   }
 
-  // Step 4: Shell configuration
+  // Step 5: Shell configuration
   lines.push('# Configure shell');
   lines.push(`echo "Configuring ${shell} as default shell..."`);
-  
+
   const shellPaths: Record<Shell, string> = {
     bash: '/bin/bash',
     zsh: '/bin/zsh',
     fish: '/usr/bin/fish',
   };
-  
+
   lines.push(`chsh -s ${shellPaths[shell]} 2>/dev/null || echo "Note: Shell change may require logout"`);
   lines.push('');
 
-  // Step 5: Completion message
+  // Step 6: Completion message
   lines.push('echo ""');
   lines.push('echo "================================================"');
   lines.push('echo "  System Ready. Welcome to your new machine!"');
@@ -97,9 +134,32 @@ export function generateScript(
   lines.push(`echo "Shell: ${shell}"`);
   lines.push(`echo "Packages installed: ${packages.length}"`);
   lines.push('echo ""');
+  
+  if (needsFlatpak || needsSnap) {
+    lines.push('echo "💡 Note: Some packages were installed via Flatpak/Snap"');
+    if (needsFlatpak) {
+      lines.push('echo "   You may need to restart for Flatpak apps to appear in your menu"');
+    }
+    lines.push('echo ""');
+  }
+  
   lines.push('echo "Enjoy coding! 🚀"');
 
   return lines.join('\n');
+}
+
+/**
+ * Check if a package requires flatpak on Linux
+ */
+function requiresFlatpak(pkg: Package): boolean {
+  return pkg.versions.some((v) => v.linuxCommand.includes('flatpak'));
+}
+
+/**
+ * Check if a package requires snap on Linux
+ */
+function requiresSnap(pkg: Package): boolean {
+  return pkg.versions.some((v) => v.linuxCommand.includes('snap'));
 }
 
 /**
