@@ -1,12 +1,13 @@
 'use client';
 
 import { useStore } from '@/lib/store';
+import { appCatalog } from '@/lib/apps';
 import { ChatMessage } from '@/types';
 import { Send, X, Minimize2, Maximize2 } from 'lucide-react';
 import { useState } from 'react';
 
 export function ChatWindow() {
-    const { isChatOpen, toggleChat, addToBucket } = useStore();
+    const { isChatOpen, toggleChat, addToBucket, removeFromBucket, bucket } = useStore();
     const [messages, setMessages] = useState<ChatMessage[]>([
         {
             role: 'assistant',
@@ -38,9 +39,44 @@ export function ChatWindow() {
                 throw new Error(data.error);
             }
 
+            // Parse the AI response (JSON or Text fallback)
+            let aiText = data.message;
+            let action = null;
+
+            try {
+                // Attempt to parse JSON response
+                // Regex to find JSON object in case model adds introductory text
+                const jsonMatch = data.message.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const parsed = JSON.parse(jsonMatch[0]);
+                    aiText = parsed.response;
+                    action = parsed.action;
+                }
+            } catch (e) {
+                // Fallback to raw text if not valid JSON
+                console.warn('Failed to parse AI JSON', e);
+            }
+
+            // Execute Actions
+            if (action && action.packageIds) {
+                action.packageIds.forEach((id: string) => {
+                    const pkg = appCatalog.find((p) => p.id === id);
+                    if (pkg) {
+                        if (action.type === 'add') {
+                            // Check if already in bucket
+                            if (!bucket.some(b => b.id === pkg.id)) {
+                                addToBucket({ ...pkg, selectedVersion: pkg.defaultVersion });
+                            }
+                        } else if (action.type === 'remove') {
+                            removeFromBucket(pkg.id);
+                        }
+                    }
+                });
+            }
+
             const assistantMessage: ChatMessage = {
                 role: 'assistant',
-                content: data.message,
+                content: aiText,
             };
             setMessages((prev) => [...prev, assistantMessage]);
         } catch (error) {
@@ -101,8 +137,8 @@ export function ChatWindow() {
                             >
                                 <div
                                     className={`max-w-[80%] p-3 rounded-lg ${msg.role === 'user'
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-muted text-foreground'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted text-foreground'
                                         }`}
                                 >
                                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
