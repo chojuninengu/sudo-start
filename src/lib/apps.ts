@@ -214,7 +214,7 @@ export const appCatalog: Package[] = [
   },
   
   // ============================================
-  // DEVELOPER TOOLS
+  // DEVELOPER & DEVOPS TOOLS
   // ============================================
   
   {
@@ -247,6 +247,40 @@ export const appCatalog: Package[] = [
         label: 'Latest',
         macCommand: 'brew install curl',
         linuxCommand: 'sudo apt-get install -y curl',
+      },
+    ],
+  },
+
+  {
+    id: 'terraform',
+    name: 'Terraform',
+    description: '🏗️ Infrastructure as Code tool',
+    category: 'tool',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install terraform',
+        linuxCommand: 'wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list && sudo apt update && sudo apt-get install terraform',
+      },
+    ],
+  },
+
+  {
+    id: 'ansible',
+    name: 'Ansible',
+    description: '🤖 IT automation platform',
+    category: 'tool',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install ansible',
+        linuxCommand: 'sudo apt-get install -y ansible',
       },
     ],
   },
@@ -312,9 +346,77 @@ export const appCatalog: Package[] = [
       },
     ],
   },
+
+  {
+    id: 'rust',
+    name: 'Rust',
+    description: '🦀 Blazingly fast memory-safe language',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable (Rustup)',
+        macCommand: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y",
+        linuxCommand: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y",
+      },
+    ],
+  },
+
+  {
+    id: 'go',
+    name: 'Go (Golang)',
+    description: '🐹 Simple, reliable, and efficient language',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install go',
+        linuxCommand: 'wget https://go.dev/dl/go1.21.6.linux-amd64.tar.gz && sudo tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz && echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile',
+      },
+    ],
+  },
+
+  {
+    id: 'java',
+    name: 'Java (JDK)',
+    description: '☕ General-purpose programming language',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest (OpenJDK)',
+        macCommand: 'brew install openjdk',
+        linuxCommand: 'sudo apt-get install -y default-jdk',
+      },
+    ],
+  },
+
+  {
+    id: 'cpp',
+    name: 'C++',
+    description: '⚡ High-performance system programming (gcc/g++)',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'xcode-select --install',
+        linuxCommand: 'sudo apt-get install -y build-essential',
+      },
+    ],
+  },
   
   // ============================================
-  // CONTAINERS & DATABASES
+  // CONTAINERS & ORCHESTRATION
   // ============================================
   
   {
@@ -330,6 +432,57 @@ export const appCatalog: Package[] = [
         label: 'Latest',
         macCommand: 'brew install --cask docker',
         linuxCommand: 'sudo apt-get install -y docker.io && sudo systemctl start docker && sudo systemctl enable docker',
+      },
+    ],
+  },
+
+  {
+    id: 'podman',
+    name: 'Podman',
+    description: '🦭 Daemonless container engine',
+    category: 'container',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install podman',
+        linuxCommand: 'sudo apt-get install -y podman',
+      },
+    ],
+  },
+
+  {
+    id: 'kubectl',
+    name: 'Kubectl',
+    description: '☸️ Kubernetes command-line tool',
+    category: 'container',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install kubectl',
+        linuxCommand: 'sudo snap install kubectl --classic',
+      },
+    ],
+  },
+
+  {
+    id: 'minikube',
+    name: 'Minikube',
+    description: '🏝️ Local Kubernetes environment',
+    category: 'container',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install minikube',
+        linuxCommand: 'curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && sudo install minikube-linux-amd64 /usr/local/bin/minikube',
       },
     ],
   },
