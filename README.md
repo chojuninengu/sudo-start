@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 SudoStart
 
-## Getting Started
+> **The Developer's Boot Screen**  
+> Configure your dream development environment in seconds with a terminal-inspired interface.
 
-First, run the development server:
+## 🌟 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or 
-pnpm dev
-# or
-bun dev
-```
+- **Terminal Aesthetics**: A beautiful, hacker-themed UI with deep dark modes and retro animations.
+- **Modern App Catalog**: Curated list of 2025's best tools:
+  - **AI IDEs**: Windsurf, Cursor, Zed, VS Code.
+  - **Browsers**: Zen Browser, Arc, Vivaldi, Brave.
+  - **Languages**: Rust, Go, Python, Java, Node.js, C++.
+  - **Containers**: Docker, Podman, Kubernetes (kubectl, minikube).
+  - **DevOps**: Terraform, Ansible.
+- **Smart "Root" AI**: Chat with our agentic AI assistant.
+  - **Agentic Capabilities**: "Root" can actively **add and remove** packages from your bucket for you. Just ask!
+  - **Context Aware**: Knows your OS (Mac/Linux) and suggests valid tools.
+- **Cross-Platform**: Generates precise installation scripts for **macOS** (Homebrew) and **Linux** (apt/snap/flatpak).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/chojuninengu/sudo-start.git
+    cd sudo-start
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-## Learn More
+3.  **Configure Environment:**
+    Create a `.env.local` file and add your Groq API Key for the AI chat:
+    ```bash
+    GROQ_API_KEY=gsk_...
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5.  **Open locally:**
+    Visit [http://localhost:3000](http://localhost:3000).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤖 Using Root AI
 
-## Deploy on Vercel
+The chat interface is located in the bottom right.
+- **Ask for advice**: "What do I need for a Rust backend?"
+- **Give commands**: "Add Rust and Docker to my setup", or "Remove everything".
+- **Root Actions**: The AI will parse your intent and modify your package bucket programmatically.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📦 Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy easily to Vercel:
+1.  Push to GitHub.
+2.  Import project in Vercel.
+3.  Add `GROQ_API_KEY` in Vercel Environment Variables.
+4.  Deploy!
