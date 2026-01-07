@@ -94,17 +94,29 @@ export function generateScript(
       
       if (!version) return;
 
-      lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
-      lines.push(`echo "→ Installing ${pkg.name}..."`);
+      // Determine the command to check for existence
+      const checkCommand = getCheckCommand(pkg.id);
 
+      lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
+      
       // Use platform-specific command from the version
       const installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
       
       // Skip if command is a comment (e.g., Arc on Linux)
-      if (!installCmd.trim().startsWith('#')) {
-        lines.push(installCmd);
-      } else {
+      if (installCmd.trim().startsWith('#')) {
         lines.push(`echo "⚠️  ${pkg.name} is not available on ${os.toUpperCase()}"`);
+      } else if (checkCommand) {
+        // Add existence check
+        lines.push(`if ! command -v ${checkCommand} &> /dev/null; then`);
+        lines.push(`    echo "→ Installing ${pkg.name}..."`);
+        lines.push(`    ${installCmd}`);
+        lines.push('else');
+        lines.push(`    echo "✓ ${pkg.name} already installed, skipping."`);
+        lines.push('fi');
+      } else {
+        // No check available, just install
+        lines.push(`echo "→ Installing ${pkg.name}..."`);
+        lines.push(installCmd);
       }
 
       lines.push('');
