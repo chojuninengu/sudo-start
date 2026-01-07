@@ -5,6 +5,7 @@ import { appCatalog, getAppsForOS } from '@/lib/apps';
 import { Package } from '@/types';
 import { Plus, Check, ChevronDown, AlertCircle } from 'lucide-react';
 import { useState, useMemo } from 'react';
+import { Navbar } from './navbar';
 
 const categoryIcons: Record<string, string> = {
     ide: '📝',
@@ -17,7 +18,7 @@ const categoryIcons: Record<string, string> = {
 };
 
 export function PackageManager() {
-    const { os, bucket, addToBucket, toggleChat, setCurrentStep } = useStore();
+    const { os, bucket, addToBucket } = useStore();
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
     // Filter apps based on selected OS platform
@@ -26,7 +27,6 @@ export function PackageManager() {
         return getAppsForOS(os);
     }, [os]);
 
-    const categories = ['all', ...Array.from(new Set(availableApps.map((p) => p.category)))];
     const filteredPackages =
         selectedCategory === 'all'
             ? availableApps
@@ -45,47 +45,15 @@ export function PackageManager() {
     };
 
     return (
-        <div className="min-h-screen p-6 scan-lines relative">
-            <div className="max-w-7xl mx-auto space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-4xl font-bold terminal-text">Package Manager</h1>
-                        <p className="text-muted-foreground mt-2">
-                            Select tools to install on your {os?.toUpperCase()} system
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={toggleChat}
-                            className="px-6 py-3 rounded-lg border-2 border-primary terminal-text
-                       hover:terminal-glow transition-all"
-                        >
-                            💬 Ask Root
-                        </button>
-                        <div className="terminal-card px-4 py-3 rounded-lg">
-                            <span className="text-sm text-muted-foreground">Bucket:</span>
-                            <span className="ml-2 text-lg font-bold terminal-text">{bucket.length}</span>
-                        </div>
-                    </div>
-                </div>
+        <div className="min-h-screen scan-lines relative">
+            {/* Fixed Navbar */}
+            <Navbar
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+            />
 
-                {/* Category Filter */}
-                <div className="flex gap-2 flex-wrap">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-4 py-2 rounded-lg border-2 transition-all capitalize ${selectedCategory === cat
-                                    ? 'border-primary terminal-glow bg-primary/10 terminal-text'
-                                    : 'border-border hover:border-primary/50'
-                                }`}
-                        >
-                            {cat === 'all' ? '🗂️ All' : `${categoryIcons[cat]} ${cat}`}
-                        </button>
-                    ))}
-                </div>
-
+            {/* Main Content */}
+            <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
                 {/* Package Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredPackages.map((pkg) => (
@@ -99,18 +67,12 @@ export function PackageManager() {
                     ))}
                 </div>
 
-                {/* Bottom Actions */}
-                <div className="fixed bottom-6 right-6 flex gap-4">
-                    {bucket.length > 0 && (
-                        <button
-                            onClick={() => setCurrentStep('output')}
-                            className="px-8 py-4 rounded-lg bg-primary text-primary-foreground font-bold
-                       hover:bg-primary/90 transition-all terminal-glow shadow-lg"
-                        >
-                            Generate Script ({bucket.length} packages) →
-                        </button>
-                    )}
-                </div>
+                {/* Empty State */}
+                {filteredPackages.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                        <p>No packages found in this category.</p>
+                    </div>
+                )}
             </div>
         </div>
     );
