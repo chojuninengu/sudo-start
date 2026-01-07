@@ -94,17 +94,29 @@ export function generateScript(
       
       if (!version) return;
 
-      lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
-      lines.push(`echo "→ Installing ${pkg.name}..."`);
+      // Determine the command to check for existence
+      const checkCommand = getCheckCommand(pkg.id);
 
+      lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
+      
       // Use platform-specific command from the version
       const installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
       
       // Skip if command is a comment (e.g., Arc on Linux)
-      if (!installCmd.trim().startsWith('#')) {
-        lines.push(installCmd);
-      } else {
+      if (installCmd.trim().startsWith('#')) {
         lines.push(`echo "⚠️  ${pkg.name} is not available on ${os.toUpperCase()}"`);
+      } else if (checkCommand) {
+        // Add existence check
+        lines.push(`if ! command -v ${checkCommand} &> /dev/null; then`);
+        lines.push(`    echo "→ Installing ${pkg.name}..."`);
+        lines.push(`    ${installCmd}`);
+        lines.push('else');
+        lines.push(`    echo "✓ ${pkg.name} already installed, skipping."`);
+        lines.push('fi');
+      } else {
+        // No check available, just install
+        lines.push(`echo "→ Installing ${pkg.name}..."`);
+        lines.push(installCmd);
       }
 
       lines.push('');
@@ -160,6 +172,47 @@ function requiresFlatpak(pkg: Package): boolean {
  */
 function requiresSnap(pkg: Package): boolean {
   return pkg.versions.some((v) => v.linuxCommand.includes('snap'));
+}
+
+/**
+ * Get the CLI command name to check if a package is installed
+ * Returns null if no reliable check is available
+ */
+function getCheckCommand(pkgId: string): string | null {
+  const checkCommands: Record<string, string> = {
+    // IDEs
+    'vscode': 'code',
+    'cursor': 'cursor',
+    'zed': 'zed',
+    'vim': 'vim',
+    
+    // Browsers (usually not CLI accessible, skip check)
+    
+    // Languages & Runtimes
+    'nodejs': 'node',
+    'python3': 'python3',
+    'rust': 'rustc',
+    'go': 'go',
+    'java': 'java',
+    'cpp': 'g++',
+    
+    // Containers
+    'docker': 'docker',
+    'podman': 'podman',
+    'kubectl': 'kubectl',
+    'minikube': 'minikube',
+    
+    // Tools
+    'git': 'git',
+    'curl': 'curl',
+    'terraform': 'terraform',
+    'ansible': 'ansible',
+    
+    // Databases
+    'postgresql': 'psql',
+  };
+  
+  return checkCommands[pkgId] || null;
 }
 
 /**
