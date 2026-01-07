@@ -175,6 +175,47 @@ function requiresSnap(pkg: Package): boolean {
 }
 
 /**
+ * Get the CLI command name to check if a package is installed
+ * Returns null if no reliable check is available
+ */
+function getCheckCommand(pkgId: string): string | null {
+  const checkCommands: Record<string, string> = {
+    // IDEs
+    'vscode': 'code',
+    'cursor': 'cursor',
+    'zed': 'zed',
+    'vim': 'vim',
+    
+    // Browsers (usually not CLI accessible, skip check)
+    
+    // Languages & Runtimes
+    'nodejs': 'node',
+    'python3': 'python3',
+    'rust': 'rustc',
+    'go': 'go',
+    'java': 'java',
+    'cpp': 'g++',
+    
+    // Containers
+    'docker': 'docker',
+    'podman': 'podman',
+    'kubectl': 'kubectl',
+    'minikube': 'minikube',
+    
+    // Tools
+    'git': 'git',
+    'curl': 'curl',
+    'terraform': 'terraform',
+    'ansible': 'ansible',
+    
+    // Databases
+    'postgresql': 'psql',
+  };
+  
+  return checkCommands[pkgId] || null;
+}
+
+/**
  * Download the script as a .sh file
  */
 export function downloadScript(script: string, filename: string = 'sudo-start-setup.sh') {
