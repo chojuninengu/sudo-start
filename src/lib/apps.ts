@@ -41,7 +41,7 @@ export const appCatalog: Package[] = [
         label: 'AppImage (Recommended)',
         macCommand: 'brew install --cask cursor',
         // Enhanced installation with AppArmor support, icon management, and proper desktop integration
-        linuxCommand: 'echo "🔍 Checking dependencies..." && for cmd in curl chmod; do command -v "$cmd" >/dev/null 2>&1 || { echo "❌ Required dependency $cmd not found. Installing..."; sudo apt-get install -y "$cmd"; }; done && APPIMAGE_PATH=$(find "$HOME/Downloads" -type f \\( -name "Cursor-*.AppImage" -o -name "cursor-*.AppImage" \\) | sort | tail -n 1) && if [ -z "$APPIMAGE_PATH" ]; then echo "❌ Cursor AppImage not found in ~/Downloads. Please download it first from cursor.com"; exit 1; fi && INSTALL_DIR="/opt/cursor" && echo "📦 Installing Cursor..." && sudo mkdir -p "$INSTALL_DIR" && sudo cp "$APPIMAGE_PATH" "$INSTALL_DIR/cursor" && sudo chmod +x "$INSTALL_DIR/cursor" && sudo ln -sf "$INSTALL_DIR/cursor" /usr/local/bin/cursor && echo "✅ Cursor installed successfully! You can run it with: cursor"',
+        linuxCommand: 'echo "🔍 Checking dependencies..." && for cmd in curl wget gpg apt; do command -v "$cmd" >/dev/null 2>&1 || { echo "❌ Required dependency $cmd not found. Installing..."; sudo apt-get install -y "$cmd"; }; done && echo "📥 Downloading Cursor .deb package..." && cd /tmp && wget -q "https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/2.3" -O cursor.deb && echo "📦 Installing Cursor .deb package..." && sudo apt-get install -y ./cursor.deb && rm -f cursor.deb && echo "✅ Cursor installed successfully! You can run it from your applications menu or with: cursor"',
       },
       {
         id: 'download',
