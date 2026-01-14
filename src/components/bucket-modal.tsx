@@ -24,8 +24,8 @@ export function BucketModal({ onClose }: BucketModalProps) {
             />
 
             {/* Modal */}
-            <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-hidden
-                terminal-card rounded-lg shadow-2xl z-50 border border-border">
+            <div className="absolute right-0 top-full mt-2 w-80 max-h-96
+                terminal-card rounded-lg shadow-2xl z-50 border border-border flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-border bg-card">
                     <div className="flex items-center gap-2">
@@ -44,7 +44,7 @@ export function BucketModal({ onClose }: BucketModalProps) {
                 </div>
 
                 {/* Content */}
-                <div className="max-h-64 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto">
                     {bucket.length === 0 ? (
                         <div className="p-6 text-center text-muted-foreground">
                             <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -75,24 +75,26 @@ export function BucketModal({ onClose }: BucketModalProps) {
                 </div>
 
                 {/* Footer */}
-                {bucket.length > 0 && (
-                    <div className="p-3 border-t border-border bg-card space-y-2">
-                        <button
-                            onClick={handleGenerateScript}
-                            className="w-full py-2 px-4 rounded-lg bg-primary text-primary-foreground 
-                                font-medium hover:bg-primary/90 transition-all terminal-glow"
-                        >
-                            Generate Script →
-                        </button>
-                        <button
-                            onClick={clearBucket}
-                            className="w-full py-2 px-4 rounded-lg border border-destructive text-destructive
-                                hover:bg-destructive/10 transition-all text-sm"
-                        >
-                            Clear All
-                        </button>
-                    </div>
-                )}
+                <div className="p-3 border-t border-border bg-card space-y-2">
+                    {bucket.length > 0 && (
+                        <>
+                            <button
+                                onClick={handleGenerateScript}
+                                className="w-full py-2 px-4 rounded-lg bg-primary text-primary-foreground
+                                    font-medium hover:bg-primary/90 transition-all terminal-glow"
+                            >
+                                Generate Script →
+                            </button>
+                            <button
+                                onClick={clearBucket}
+                                className="w-full py-2 px-4 rounded-lg border border-destructive text-destructive
+                                    hover:bg-destructive/10 transition-all text-sm"
+                            >
+                                Clear All
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
         </>
     );

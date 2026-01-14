@@ -546,3 +546,20 @@ export function requiresFlatpak(pkg: Package): boolean {
 export function requiresSnap(pkg: Package): boolean {
   return pkg.versions.some((v) => v.linuxCommand.includes('snap'));
 }
+
+/**
+ * Get a default set of popular applications
+ */
+export function getDefaultApps(): Package[] {
+    const defaultAppIds = [
+        'vscode',
+        'google-chrome',
+        'git',
+        'curl',
+        'nodejs',
+        'python3',
+        'docker',
+        'postgresql',
+    ];
+    return appCatalog.filter((app) => defaultAppIds.includes(app.id));
+}

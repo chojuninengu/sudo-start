@@ -59,6 +59,7 @@ export interface AppState {
   addToBucket: (pkg: Package) => void;
   removeFromBucket: (pkgId: string) => void;
   updatePackageVersion: (pkgId: string, version: string) => void;
+  addDefaultAppsToBucket: () => void;
   setGeneratedScript: (script: string) => void;
   setCurrentStep: (step: 'boot' | 'catalog' | 'chat' | 'output') => void;
   toggleChat: () => void;
