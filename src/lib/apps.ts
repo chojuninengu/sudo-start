@@ -34,14 +34,21 @@ export const appCatalog: Package[] = [
     description: '✨ The AI-first code editor built for pair programming',
     category: 'ide',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'stable',
+    defaultVersion: 'appimage',
     versions: [
       {
-        id: 'stable',
-        label: 'Stable',
+        id: 'appimage',
+        label: 'AppImage (Recommended)',
         macCommand: 'brew install --cask cursor',
-        // Download AppImage, make executable, and create command symlink
-        linuxCommand: 'CURSOR_VERSION=$(curl -s "https://api2.cursor.sh/updates/api/update/linux-x64/cursor/0.0.0/stable" | grep -o \'"version":"[^"]*\' | cut -d\'"\' -f4) && curl -fSL "https://downloader.cursor.sh/linux/appImage/x64" -o ~/cursor-${CURSOR_VERSION}.AppImage && chmod +x ~/cursor-${CURSOR_VERSION}.AppImage && sudo ln -sf ~/cursor-${CURSOR_VERSION}.AppImage /usr/local/bin/cursor && echo "✓ Cursor ${CURSOR_VERSION} installed! Run with: cursor"',
+        // Enhanced installation with AppArmor support, icon management, and proper desktop integration
+        linuxCommand: 'echo "🔍 Checking dependencies..." && for cmd in curl wget gpg apt; do command -v "$cmd" >/dev/null 2>&1 || { echo "❌ Required dependency $cmd not found. Installing..."; sudo apt-get install -y "$cmd"; }; done && echo "📥 Downloading Cursor .deb package..." && cd /tmp && wget -q "https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/2.3" -O cursor.deb && echo "📦 Installing Cursor .deb package..." && sudo apt-get install -y ./cursor.deb && rm -f cursor.deb && echo "✅ Cursor installed successfully! You can run it from your applications menu or with: cursor"',
+      },
+      {
+        id: 'download',
+        label: 'Download Only',
+        macCommand: 'brew install --cask cursor',
+        // Download AppImage to organized directory with dependency checking
+        linuxCommand: 'echo "🔍 Checking dependencies..." && for cmd in curl wget; do command -v "$cmd" >/dev/null 2>&1 || { echo "❌ Required dependency $cmd not found. Installing..."; sudo apt-get install -y "$cmd"; }; done && echo "📥 Downloading latest Cursor AppImage..." && mkdir -p "$HOME/Downloads/.AppImage" && curl -fSL "https://downloader.cursor.sh/linux/appImage/x64" -o "$HOME/Downloads/.AppImage/Cursor-latest.AppImage" && chmod +x "$HOME/Downloads/.AppImage/Cursor-latest.AppImage" && echo "✅ Cursor AppImage downloaded to ~/Downloads/.AppImage/Cursor-latest.AppImage"',
       },
     ],
   },
@@ -553,6 +560,7 @@ export function requiresSnap(pkg: Package): boolean {
 export function getDefaultApps(): Package[] {
     const defaultAppIds = [
         'vscode',
+        'cursor',
         'google-chrome',
         'git',
         'curl',

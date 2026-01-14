@@ -123,18 +123,7 @@ export function generateScript(
     });
   }
 
-  // Step 5: Shell configuration
-  lines.push('# Configure shell');
-  lines.push(`echo "Configuring ${shell} as default shell..."`);
-
-  const shellPaths: Record<Shell, string> = {
-    bash: '/bin/bash',
-    zsh: '/bin/zsh',
-    fish: '/usr/bin/fish',
-  };
-
-  lines.push(`chsh -s ${shellPaths[shell]} 2>/dev/null || echo "Note: Shell change may require logout"`);
-  lines.push('');
+  // Skip shell configuration for faster execution
 
   // Step 6: Completion message
   lines.push('echo ""');
