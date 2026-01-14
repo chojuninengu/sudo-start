@@ -8,12 +8,11 @@ import { useState } from 'react';
 export function BootScreen() {
     const { setOS, setShell, setCurrentStep } = useStore();
     const [selectedOS, setSelectedOS] = useState<OS | null>(null);
-    const [selectedShell, setSelectedShell] = useState<Shell | null>(null);
 
     const handleContinue = () => {
-        if (selectedOS && selectedShell) {
+        if (selectedOS) {
             setOS(selectedOS);
-            setShell(selectedShell);
+            setShell('bash'); // Default to bash
             setCurrentStep('catalog');
         }
     };
@@ -73,42 +72,20 @@ export function BootScreen() {
                         </div>
                     </div>
 
-                    {/* Question 2: Shell Selection */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <span className="terminal-text">root@sudostart:~$</span>
-                            <p className="text-lg font-medium">Select your Shell:</p>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4 pl-8">
-                            {(['bash', 'zsh', 'fish'] as Shell[]).map((shell) => (
-                                <button
-                                    key={shell}
-                                    onClick={() => setSelectedShell(shell)}
-                                    className={`p-6 rounded-lg border-2 transition-all ${selectedShell === shell
-                                            ? 'border-primary terminal-glow bg-primary/10'
-                                            : 'border-border hover:border-primary/50'
-                                        }`}
-                                >
-                                    <h3 className="text-xl font-bold terminal-text capitalize">
-                                        {shell}
-                                    </h3>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+
 
                     {/* Continue Button */}
                     <div className="pt-4">
                         <button
                             onClick={handleContinue}
-                            disabled={!selectedOS || !selectedShell}
+                            disabled={!selectedOS}
                             className="w-full py-4 px-6 rounded-lg bg-primary text-primary-foreground font-bold text-lg
                        hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed
                        terminal-glow enabled:hover:shadow-lg"
                         >
-                            {selectedOS && selectedShell
-                                ? `$ sudo start --os=${selectedOS} --shell=${selectedShell}`
-                                : '$ Select OS and Shell to continue'}
+                            {selectedOS
+                                ? `$ sudo start --os=${selectedOS} --shell=bash`
+                                : '$ Select OS to continue'}
                         </button>
                     </div>
                 </div>
