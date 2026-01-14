@@ -1,38 +1,13 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { appCatalog, getAppsForOS } from '@/lib/apps';
 import { MessageSquare, ShoppingCart, Terminal } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { BucketModal } from './bucket-modal';
 
-const categoryIcons: Record<string, string> = {
-    all: '🗂️',
-    ide: '📝',
-    browser: '🌐',
-    tool: '🔧',
-    runtime: '⚙️',
-    container: '📦',
-    database: '💾',
-    terminal: '💻',
-};
-
-interface NavbarProps {
-    selectedCategory: string;
-    onCategoryChange: (category: string) => void;
-}
-
-export function Navbar({ selectedCategory, onCategoryChange }: NavbarProps) {
+export function Navbar() {
     const { os, bucket, toggleChat } = useStore();
     const [isBucketOpen, setIsBucketOpen] = useState(false);
-
-    // Get available categories based on OS
-    const availableApps = useMemo(() => {
-        if (!os) return appCatalog;
-        return getAppsForOS(os);
-    }, [os]);
-
-    const categories = ['all', ...Array.from(new Set(availableApps.map((p) => p.category)))];
 
     return (
         <>
@@ -48,22 +23,6 @@ export function Navbar({ selectedCategory, onCategoryChange }: NavbarProps) {
                                     {os?.toUpperCase()} Package Manager
                                 </p>
                             </div>
-                        </div>
-
-                        {/* Category Filters */}
-                        <div className="hidden md:flex gap-2 flex-wrap flex-1 justify-center">
-                            {categories.map((cat) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => onCategoryChange(cat)}
-                                    className={`px-3 py-1.5 rounded-lg border text-sm transition-all capitalize ${selectedCategory === cat
-                                            ? 'border-primary terminal-glow bg-primary/10 terminal-text'
-                                            : 'border-border hover:border-primary/50'
-                                        }`}
-                                >
-                                    {categoryIcons[cat] || '📁'} {cat}
-                                </button>
-                            ))}
                         </div>
 
                         {/* Right Actions */}
@@ -103,27 +62,11 @@ export function Navbar({ selectedCategory, onCategoryChange }: NavbarProps) {
                             </button>
                         </div>
                     </div>
-
-                    {/* Mobile Category Filters */}
-                    <div className="md:hidden flex gap-2 flex-wrap mt-4 pt-4 border-t border-border">
-                        {categories.map((cat) => (
-                            <button
-                                key={cat}
-                                onClick={() => onCategoryChange(cat)}
-                                className={`px-3 py-1.5 rounded-lg border text-sm transition-all capitalize ${selectedCategory === cat
-                                        ? 'border-primary terminal-glow bg-primary/10 terminal-text'
-                                        : 'border-border hover:border-primary/50'
-                                    }`}
-                            >
-                                {categoryIcons[cat] || '📁'} {cat}
-                            </button>
-                        ))}
-                    </div>
                 </div>
             </nav>
 
             {/* Spacer for fixed navbar */}
-            <div className="h-24 md:h-20" />
+            <div className="h-20" />
         </>
     );
 }

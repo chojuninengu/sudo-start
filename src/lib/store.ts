@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { AppState, Package } from '@/types';
+import { getDefaultApps } from './apps';
 
 export const useStore = create<AppState>((set) => ({
   // Initial state
@@ -35,6 +36,20 @@ export const useStore = create<AppState>((set) => ({
       ),
     })),
   
+  addDefaultAppsToBucket: () =>
+    set((state) => {
+        const defaultApps = getDefaultApps();
+        const newBucket = [...state.bucket];
+
+        defaultApps.forEach((app) => {
+            if (!newBucket.find((p) => p.id === app.id)) {
+                newBucket.push(app);
+            }
+        });
+
+        return { bucket: newBucket };
+    }),
+
   setGeneratedScript: (script) => set({ generatedScript: script }),
   
   setCurrentStep: (step) => set({ currentStep: step }),
