@@ -22,7 +22,8 @@ export const appCatalog: Package[] = [
         id: 'latest',
         label: 'Latest',
         macCommand: 'brew install --cask windsurf',
-        linuxCommand: 'curl -fsSL https://install.codeium.com/windsurf | sh',
+        // Official Windsurf installation from Codeium
+        linuxCommand: 'sudo apt-get install -y wget gpg && wget -qO- "https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/windsurf.gpg" | gpg --dearmor > /tmp/windsurf-stable.gpg && sudo install -D -o root -g root -m 644 /tmp/windsurf-stable.gpg /etc/apt/keyrings/windsurf-stable.gpg && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/windsurf-stable.gpg] https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/apt stable main" | sudo tee /etc/apt/sources.list.d/windsurf.list > /dev/null && rm -f /tmp/windsurf-stable.gpg && sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y windsurf',
       },
     ],
   },
@@ -39,7 +40,8 @@ export const appCatalog: Package[] = [
         id: 'stable',
         label: 'Stable',
         macCommand: 'brew install --cask cursor',
-        linuxCommand: 'curl -fsSL https://raw.githubusercontent.com/watzon/cursor-linux-installer/main/install.sh | bash',
+        // Download AppImage, make executable, and create command symlink
+        linuxCommand: 'CURSOR_VERSION=$(curl -s "https://api2.cursor.sh/updates/api/update/linux-x64/cursor/0.0.0/stable" | grep -o \'"version":"[^"]*\' | cut -d\'"\' -f4) && curl -fSL "https://downloader.cursor.sh/linux/appImage/x64" -o ~/cursor-${CURSOR_VERSION}.AppImage && chmod +x ~/cursor-${CURSOR_VERSION}.AppImage && sudo ln -sf ~/cursor-${CURSOR_VERSION}.AppImage /usr/local/bin/cursor && echo "✓ Cursor ${CURSOR_VERSION} installed! Run with: cursor"',
       },
     ],
   },
