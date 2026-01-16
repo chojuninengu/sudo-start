@@ -39,8 +39,9 @@ Current Package Catalog:
 - Browsers: zen-browser, arc, vivaldi, brave, google-chrome, firefox
 - Languages: rust (Rust), go (Go), python3 (Python), java (Java JDK), cpp (C++), nodejs (Node.js)
 - Containers: docker, podman, kubectl, minikube
-- Tools: git, curl, terraform, ansible
-- Databases: postgresql
+- Tools: git, curl, terraform, ansible, github-cli, slack, postman, figma
+- Databases: postgresql, redis, mongodb
+- Terminals: iterm2, warp, alacritty
 
 Examples:
 User: "I want to do Rust dev"
