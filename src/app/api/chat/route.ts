@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import { appCatalog } from '@/lib/apps';
+import { Package } from '@/types';
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
+
+// Helper function to generate the package catalog string for the prompt
+const generatePackageCatalog = (catalog: Package[]): string => {
+  const categories: Record<string, string[]> = {};
+
+  catalog.forEach(pkg => {
+    if (!categories[pkg.category]) {
+      categories[pkg.category] = [];
+    }
+    categories[pkg.category].push(`${pkg.id} (${pkg.name})`);
+  });
+
+  return Object.entries(categories)
+    .map(([category, packages]) => `- ${category.charAt(0).toUpperCase() + category.slice(1)}: ${packages.join(', ')}`)
+    .join('\n');
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +33,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const packageCatalogString = generatePackageCatalog(appCatalog);
 
     // System prompt for "Root" - the AI assistant
     const systemPrompt = {
@@ -35,12 +55,7 @@ The JSON Schema is:
 The "action" field is OPTIONAL. Only include it if the user explicitly asks to add or remove packages, or if you are strongly recommending a setup and they accepted.
 
 Current Package Catalog:
-- IDEs: windsurf, cursor, zed, vscode (Visual Studio Code), vim
-- Browsers: zen-browser, arc, vivaldi, brave, google-chrome, firefox
-- Languages: rust (Rust), go (Go), python3 (Python), java (Java JDK), cpp (C++), nodejs (Node.js)
-- Containers: docker, podman, kubectl, minikube
-- Tools: git, curl, terraform, ansible
-- Databases: postgresql
+${packageCatalogString}
 
 Examples:
 User: "I want to do Rust dev"

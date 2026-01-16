@@ -31,6 +31,7 @@ export interface Package {
   // Version support
   defaultVersion: string;
   versions: AppVersion[];
+  versionSource?: string; // e.g., "owner/repo" for GitHub releases
   
   // Legacy support for backward compatibility
   selectedVersion?: string;

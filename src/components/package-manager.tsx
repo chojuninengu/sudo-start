@@ -6,6 +6,7 @@ import { Package } from '@/types';
 import { Plus, Check, ChevronDown, AlertCircle, Wand2 } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { Navbar } from './navbar';
+import VersionBadge from './VersionBadge';
 
 const categoryIcons: Record<string, string> = {
     all: '🗂️',
@@ -126,37 +127,6 @@ function PackageCard({
     onAddToBucket: (pkg: Package, versionId: string) => void;
 }) {
     const [selectedVersion, setSelectedVersion] = useState(pkg.defaultVersion);
-    const [dynamicVersions, setDynamicVersions] = useState<string[]>([]);
-    const [isLoadingVersions, setIsLoadingVersions] = useState(false);
-
-    // Tools that support dynamic version fetching
-    const dynamicVersionTools = ['nodejs', 'python3', 'rust', 'go', 'docker'];
-    const supportsDynamicVersions = dynamicVersionTools.includes(pkg.id);
-
-    // Fetch dynamic versions for supported tools
-    useEffect(() => {
-        if (!supportsDynamicVersions) return;
-
-        const fetchVersions = async () => {
-            setIsLoadingVersions(true);
-            try {
-                const toolId = pkg.id === 'python3' ? 'python' : pkg.id;
-                const response = await fetch(`/api/versions?tool=${toolId}`);
-                const data = await response.json();
-
-                if (data.versions && data.versions.length > 0) {
-                    setDynamicVersions(data.versions);
-                    setSelectedVersion(data.versions[0]); // Select latest by default
-                }
-            } catch (error) {
-                console.error('Failed to fetch versions:', error);
-            } finally {
-                setIsLoadingVersions(false);
-            }
-        };
-
-        fetchVersions();
-    }, [pkg.id, supportsDynamicVersions]);
 
     const handleAdd = () => {
         onAddToBucket(pkg, selectedVersion);
@@ -165,11 +135,7 @@ function PackageCard({
     // Check if app is available for current OS
     const isAvailable = os ? pkg.platforms[os] : true;
 
-    // Determine which versions to show
-    const versionsToShow =
-        supportsDynamicVersions && dynamicVersions.length > 0
-            ? dynamicVersions.map((v) => ({ id: v, label: v }))
-            : pkg.versions.map((v) => ({ id: v.id, label: v.label }));
+    const versionsToShow = pkg.versions.map((v) => ({ id: v.id, label: v.label }));
 
     return (
         <div
@@ -182,6 +148,7 @@ function PackageCard({
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
                             <h3 className="text-xl font-bold terminal-text">{pkg.name}</h3>
+                            {pkg.versionSource && <VersionBadge repoSlug={pkg.versionSource} />}
                             {!isAvailable && (
                                 <span className="text-xs px-2 py-1 rounded bg-destructive/20 text-destructive border border-destructive flex items-center gap-1">
                                     <AlertCircle className="w-3 h-3" />
@@ -197,15 +164,10 @@ function PackageCard({
                 </div>
 
                 {/* Version Selector */}
-                {(versionsToShow.length > 1 || supportsDynamicVersions) && (
+                {versionsToShow.length > 1 && (
                     <div className="space-y-2 mt-4">
                         <label className="text-sm text-muted-foreground flex items-center gap-2">
                             Version:
-                            {isLoadingVersions && (
-                                <span className="text-xs terminal-text animate-pulse">
-                                    fetching...
-                                </span>
-                            )}
                         </label>
                         <div className="relative">
                             <select
@@ -214,7 +176,7 @@ function PackageCard({
                                 className="w-full px-3 py-2 rounded-lg bg-input border border-border
                            text-foreground appearance-none cursor-pointer
                            focus:outline-none focus:ring-2 focus:ring-ring"
-                                disabled={isInBucket || !isAvailable || isLoadingVersions}
+                                disabled={isInBucket || !isAvailable}
                             >
                                 {versionsToShow.map((version) => (
                                     <option key={version.id} value={version.id}>

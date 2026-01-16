@@ -34,21 +34,13 @@ export const appCatalog: Package[] = [
     description: '✨ The AI-first code editor built for pair programming',
     category: 'ide',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'appimage',
+    defaultVersion: 'dpkg',
     versions: [
       {
-        id: 'appimage',
-        label: 'AppImage (Recommended)',
+        id: 'dpkg',
+        label: 'dpkg (Recommended)',
         macCommand: 'brew install --cask cursor',
-        // Enhanced installation with AppArmor support, icon management, and proper desktop integration
-        linuxCommand: 'echo "🔍 Checking dependencies..." && for cmd in curl wget gpg apt; do command -v "$cmd" >/dev/null 2>&1 || { echo "❌ Required dependency $cmd not found. Installing..."; sudo apt-get install -y "$cmd"; }; done && echo "📥 Downloading Cursor .deb package..." && cd /tmp && wget -q "https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/2.3" -O cursor.deb && echo "📦 Installing Cursor .deb package..." && sudo apt-get install -y ./cursor.deb && rm -f cursor.deb && echo "✅ Cursor installed successfully! You can run it from your applications menu or with: cursor"',
-      },
-      {
-        id: 'download',
-        label: 'Download Only',
-        macCommand: 'brew install --cask cursor',
-        // Download AppImage to organized directory with dependency checking
-        linuxCommand: 'echo "🔍 Checking dependencies..." && for cmd in curl wget; do command -v "$cmd" >/dev/null 2>&1 || { echo "❌ Required dependency $cmd not found. Installing..."; sudo apt-get install -y "$cmd"; }; done && echo "📥 Downloading latest Cursor AppImage..." && mkdir -p "$HOME/Downloads/.AppImage" && curl -fSL "https://downloader.cursor.sh/linux/appImage/x64" -o "$HOME/Downloads/.AppImage/Cursor-latest.AppImage" && chmod +x "$HOME/Downloads/.AppImage/Cursor-latest.AppImage" && echo "✅ Cursor AppImage downloaded to ~/Downloads/.AppImage/Cursor-latest.AppImage"',
+        linuxCommand: 'echo "🔍 Checking dependencies..." && for cmd in curl wget gpg apt; do command -v "$cmd" >/dev/null 2>&1 || { echo "❌ Required dependency $cmd not found. Installing..."; sudo apt-get install -y "$cmd"; }; done && echo "📥 Downloading Cursor .deb package..." && cd /tmp && wget -q "https://api2.cursor.sh/updates/download/golden/linux-x64-deb/cursor/2.3" -O cursor.deb && echo "📦 Installing Cursor .deb package..." && sudo dpkg -i cursor.deb && rm -f cursor.deb && echo "✅ Cursor installed successfully! You can run it from your applications menu or with: cursor"',
       },
     ],
   },
@@ -60,6 +52,7 @@ export const appCatalog: Package[] = [
     category: 'ide',
     platforms: { macos: true, linux: true },
     defaultVersion: 'stable',
+    versionSource: 'zed-industries/zed',
     versions: [
       {
         id: 'stable',
@@ -77,18 +70,13 @@ export const appCatalog: Package[] = [
     category: 'ide',
     platforms: { macos: true, linux: true },
     defaultVersion: 'stable',
+    versionSource: 'microsoft/vscode',
     versions: [
       {
         id: 'stable',
         label: 'Stable',
         macCommand: 'brew install --cask visual-studio-code',
-        linuxCommand: 'snap install code --classic',
-      },
-      {
-        id: 'insiders',
-        label: 'Insiders (Daily)',
-        macCommand: 'brew install --cask visual-studio-code-insiders',
-        linuxCommand: 'snap install code-insiders --classic',
+        linuxCommand: 'sudo apt-get install -y code',
       },
     ],
   },
@@ -100,6 +88,7 @@ export const appCatalog: Package[] = [
     category: 'ide',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'vim/vim',
     versions: [
       {
         id: 'latest',
@@ -113,29 +102,6 @@ export const appCatalog: Package[] = [
   // ============================================
   // MODERN BROWSERS (Next-Gen Browsing)
   // ============================================
-  
-  {
-    id: 'zen-browser',
-    name: 'Zen Browser',
-    description: '🎨 Beautiful Firefox fork with vertical tabs & privacy focus',
-    category: 'browser',
-    platforms: { macos: true, linux: true },
-    defaultVersion: 'stable',
-    versions: [
-      {
-        id: 'stable',
-        label: 'Stable',
-        macCommand: 'brew install --cask zen-browser',
-        linuxCommand: 'flatpak install flathub io.github.zen_browser.zen -y',
-      },
-      {
-        id: 'twilight',
-        label: 'Twilight (Beta)',
-        macCommand: 'brew install --cask zen@twilight',
-        linuxCommand: 'flatpak install flathub io.github.zen_browser.zen.twilight -y',
-      },
-    ],
-  },
   
   {
     id: 'arc',
@@ -233,6 +199,7 @@ export const appCatalog: Package[] = [
     category: 'tool',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'hashicorp/terraform',
     versions: [
       {
         id: 'latest',
@@ -250,6 +217,7 @@ export const appCatalog: Package[] = [
     category: 'tool',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'ansible/ansible',
     versions: [
       {
         id: 'latest',
@@ -267,6 +235,7 @@ export const appCatalog: Package[] = [
     category: 'tool',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'cli/cli',
     versions: [
       {
         id: 'latest',
@@ -293,6 +262,40 @@ export const appCatalog: Package[] = [
       },
     ],
   },
+
+  {
+    id: 'postman',
+    name: 'Postman',
+    description: 'API development and testing tool',
+    category: 'tool',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install --cask postman',
+        linuxCommand: 'sudo apt-get install -y postman',
+      },
+    ],
+  },
+
+  {
+    id: 'github-cli',
+    name: 'GitHub CLI',
+    description: 'Command-line interface for GitHub',
+    category: 'tool',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install gh',
+        linuxCommand: 'sudo apt-get install -y gh',
+      },
+    ],
+  },
   
   // ============================================
   // RUNTIMES & LANGUAGES
@@ -305,6 +308,7 @@ export const appCatalog: Package[] = [
     category: 'runtime',
     platforms: { macos: true, linux: true },
     defaultVersion: '20',
+    versionSource: 'nodejs/node',
     versions: [
       {
         id: '18',
@@ -363,6 +367,7 @@ export const appCatalog: Package[] = [
     category: 'runtime',
     platforms: { macos: true, linux: true },
     defaultVersion: 'stable',
+    versionSource: 'rust-lang/rust',
     versions: [
       {
         id: 'stable',
@@ -380,6 +385,7 @@ export const appCatalog: Package[] = [
     category: 'runtime',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'golang/go',
     versions: [
       {
         id: 'latest',
@@ -435,6 +441,7 @@ export const appCatalog: Package[] = [
     category: 'container',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'docker/compose',
     versions: [
       {
         id: 'latest',
@@ -452,6 +459,7 @@ export const appCatalog: Package[] = [
     category: 'container',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'containers/podman',
     versions: [
       {
         id: 'latest',
@@ -469,12 +477,13 @@ export const appCatalog: Package[] = [
     category: 'container',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'kubernetes/kubectl',
     versions: [
       {
         id: 'latest',
         label: 'Latest',
         macCommand: 'brew install kubectl',
-        linuxCommand: 'sudo snap install kubectl --classic',
+        linuxCommand: 'sudo apt-get install -y kubectl',
       },
     ],
   },
@@ -486,6 +495,7 @@ export const appCatalog: Package[] = [
     category: 'container',
     platforms: { macos: true, linux: true },
     defaultVersion: 'latest',
+    versionSource: 'kubernetes/minikube',
     versions: [
       {
         id: 'latest',
@@ -521,6 +531,40 @@ export const appCatalog: Package[] = [
         label: 'PostgreSQL 16',
         macCommand: 'brew install postgresql@16',
         linuxCommand: 'sudo apt-get install -y postgresql-16',
+      },
+    ],
+  },
+
+  {
+    id: 'redis',
+    name: 'Redis',
+    description: 'In-memory data structure store',
+    category: 'database',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install redis',
+        linuxCommand: 'sudo apt-get install -y redis-server',
+      },
+    ],
+  },
+
+  {
+    id: 'mongodb',
+    name: 'MongoDB',
+    description: 'NoSQL document database',
+    category: 'database',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install mongodb-community',
+        linuxCommand: 'sudo apt-get install -y mongodb',
       },
     ],
   },
