@@ -48,6 +48,8 @@ export const toolApps: Package[] = [
         linuxCommand: 'wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list && sudo apt update && sudo apt-get install terraform',
       },
     ],
+    linuxCommandTemplate: 'wget https://releases.hashicorp.com/terraform/${VERSION_NO_V}/terraform_${VERSION_NO_V}_linux_amd64.zip && unzip terraform_${VERSION_NO_V}_linux_amd64.zip && sudo mv terraform /usr/local/bin/ && rm terraform_${VERSION_NO_V}_linux_amd64.zip',
+    macosCommandTemplate: 'brew install terraform@${VERSION_NO_V}',
   },
   {
     id: 'ansible',
@@ -80,6 +82,8 @@ export const toolApps: Package[] = [
         linuxCommand: 'type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y) && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && sudo apt update && sudo apt install gh -y',
       },
     ],
+    linuxCommandTemplate: 'wget https://github.com/cli/cli/releases/download/${VERSION}/gh_${VERSION_NO_V}_linux_amd64.deb -O gh.deb && sudo apt install ./gh.deb -y && rm gh.deb',
+    macosCommandTemplate: 'brew install gh',
   },
   {
     id: 'slack',

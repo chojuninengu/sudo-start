@@ -4,6 +4,27 @@ import { NextRequest, NextResponse } from 'next/server';
 const versionCache: Record<string, { data: string[]; timestamp: number }> = {};
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+// Helper for GitHub releases
+const githubReleases = (repo: string, filter: (tag: string) => boolean = () => true) => ({
+    url: `https://api.github.com/repos/${repo}/releases?per_page=10`,
+    parser: (data: unknown) => {
+        const releases = data as { tag_name: string; prerelease: boolean }[];
+        return releases
+            .filter((r) => !r.prerelease && filter(r.tag_name))
+            .map((r) => r.tag_name)
+            .slice(0, 5);
+    },
+});
+
+// Helper for EndOfLife.date API
+const eolApi = (product: string) => ({
+    url: `https://endoflife.date/api/${product}.json`,
+    parser: (data: unknown) => {
+        const releases = data as { cycle: string; latest: string }[];
+        return releases.slice(0, 5).map((r) => r.latest);
+    },
+});
+
 // Version source configurations
 const VERSION_SOURCES: Record<string, {
     url: string;
@@ -57,13 +78,7 @@ const VERSION_SOURCES: Record<string, {
                 .map((r) => r.tag_name.replace('v', ''));
         },
     },
-    postgresql: {
-        url: 'https://endoflife.date/api/postgresql.json',
-        parser: (data) => {
-            const releases = data as { cycle: string; latest: string }[];
-            return releases.slice(0, 5).map((r) => r.latest);
-        },
-    },
+    postgresql: eolApi('postgresql'),
     redis: {
         url: 'https://api.github.com/repos/redis/redis/releases?per_page=5',
         parser: (data) => {
@@ -89,6 +104,47 @@ const VERSION_SOURCES: Record<string, {
             return Array.from(new Set(releases.map((r) => r.version))).slice(0, 5);
         },
     },
+    // IDEs
+    vscode: githubReleases('microsoft/vscode'),
+    zed: githubReleases('zed-industries/zed'),
+
+    // Tools
+    terraform: githubReleases('hashicorp/terraform'),
+    ansible: githubReleases('ansible/ansible'),
+    'github-cli': githubReleases('cli/cli'),
+
+    // Containers
+    podman: githubReleases('containers/podman'),
+    kubectl: githubReleases('kubernetes/kubernetes', (tag) => tag.startsWith('v')),
+    minikube: githubReleases('kubernetes/minikube'),
+
+    // DevOps
+    jenkins: githubReleases('jenkinsci/jenkins'),
+    prometheus: githubReleases('prometheus/prometheus'),
+    'docker-compose': githubReleases('docker/compose'),
+
+    // Frameworks
+    react: githubReleases('facebook/react'),
+    vue: githubReleases('vuejs/core'),
+    angular: githubReleases('angular/angular'),
+    nextjs: githubReleases('vercel/next.js'),
+    django: githubReleases('django/django'),
+    flask: githubReleases('pallets/flask'),
+    express: githubReleases('expressjs/express'),
+
+    // Web Servers
+    nginx: githubReleases('nginx/nginx'),
+
+    // Game Dev
+    godot: githubReleases('godotengine/godot'),
+    blender: githubReleases('blender/blender'),
+
+    // Desktop Dev
+    electron: githubReleases('electron/electron'),
+    tauri: githubReleases('tauri-apps/tauri'),
+
+    // Mobile
+    'react-native': githubReleases('facebook/react-native'),
 };
 
 export async function GET(request: NextRequest) {

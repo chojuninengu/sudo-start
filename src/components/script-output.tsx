@@ -81,7 +81,7 @@ export function ScriptOutput() {
                                     className="px-3 py-1 rounded-lg bg-primary/20 text-primary text-sm"
                                 >
                                     {pkg.name}
-                                    {pkg.selectedVersion && ` v${pkg.selectedVersion}`}
+                                    {pkg.selectedVersion && ` ${pkg.selectedVersion.startsWith('v') ? pkg.selectedVersion : 'v' + pkg.selectedVersion}`}
                                 </span>
                             ))}
                         </div>

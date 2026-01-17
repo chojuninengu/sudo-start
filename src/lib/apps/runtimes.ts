@@ -22,6 +22,8 @@ export const runtimeApps: Package[] = [
         linuxCommand: 'curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs',
       },
     ],
+    linuxCommandTemplate: 'curl -fsSL https://deb.nodesource.com/setup_${VERSION_MAJOR}.x | sudo -E bash - && sudo apt-get install -y nodejs',
+    macosCommandTemplate: 'brew install node@${VERSION_MAJOR}',
   },
   {
     id: 'cpp',
@@ -54,6 +56,8 @@ export const runtimeApps: Package[] = [
         linuxCommand: 'sudo apt-get install -y python3 python3-pip',
       },
     ],
+    linuxCommandTemplate: 'sudo add-apt-repository ppa:deadsnakes/ppa -y && sudo apt update && sudo apt install python${VERSION_NO_V} python${VERSION_NO_V}-venv -y',
+    macosCommandTemplate: 'brew install python@${VERSION_NO_V}',
   },
   {
     id: 'rust',
@@ -70,6 +74,8 @@ export const runtimeApps: Package[] = [
         linuxCommand: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y",
       },
     ],
+    linuxCommandTemplate: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env && rustup toolchain install ${VERSION_NO_V} && rustup default ${VERSION_NO_V}",
+    macosCommandTemplate: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env && rustup toolchain install ${VERSION_NO_V} && rustup default ${VERSION_NO_V}",
   },
   {
     id: 'go',
@@ -86,6 +92,8 @@ export const runtimeApps: Package[] = [
         linuxCommand: 'GO_VERSION=$(curl -s https://go.dev/VERSION?m=text | head -n1) && wget https://go.dev/dl/${GO_VERSION}.linux-amd64.tar.gz && sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf ${GO_VERSION}.linux-amd64.tar.gz && rm ${GO_VERSION}.linux-amd64.tar.gz && echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile',
       },
     ],
+    linuxCommandTemplate: 'wget https://go.dev/dl/go${VERSION_NO_V}.linux-amd64.tar.gz && sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go${VERSION_NO_V}.linux-amd64.tar.gz && rm go${VERSION_NO_V}.linux-amd64.tar.gz && echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile',
+    macosCommandTemplate: 'brew install go@${VERSION}',
   },
   {
     id: 'java',

@@ -43,9 +43,11 @@ export function PackageManager() {
     const isInBucket = (pkg: Package) => bucket.some((p) => p.id === pkg.id);
 
     const handleAddToBucket = (pkg: Package, versionId: string) => {
+        // If it's a dynamic version, it might not be in pkg.versions
         const version = pkg.versions.find((v) => v.id === versionId);
-        if (!version) return;
 
+        // If it's not a static version, we check if it's one of the dynamic ones we fetched
+        // We'll trust the versionId passed from the PackageCard
         addToBucket({
             ...pkg,
             selectedVersion: versionId,
@@ -137,7 +139,12 @@ function PackageCard({
     const [isLoadingVersions, setIsLoadingVersions] = useState(false);
 
     // Tools that support dynamic version fetching
-    const dynamicVersionTools = ['nodejs', 'python3', 'rust', 'go', 'docker', 'postgresql', 'redis', 'mongodb', 'flutter'];
+    const dynamicVersionTools = [
+        'nodejs', 'python3', 'rust', 'go', 'docker', 'postgresql', 'redis', 'mongodb', 'flutter',
+        'vscode', 'zed', 'terraform', 'ansible', 'github-cli', 'podman', 'kubectl', 'minikube',
+        'jenkins', 'prometheus', 'docker-compose', 'react', 'vue', 'angular', 'nextjs',
+        'django', 'flask', 'express', 'nginx', 'godot', 'blender', 'electron', 'tauri', 'react-native'
+    ];
     const supportsDynamicVersions = dynamicVersionTools.includes(pkg.id);
 
     // Fetch dynamic versions for supported tools

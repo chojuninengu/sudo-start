@@ -78,7 +78,17 @@ export function generateScript(
     packages.forEach((pkg) => {
       // Get the selected version or use default
       const versionId = pkg.selectedVersion || pkg.defaultVersion;
-      const version = pkg.versions.find(v => v.id === versionId);
+      let version = pkg.versions.find(v => v.id === versionId);
+
+      // Synthesis for dynamic versions
+      if (!version && versionId !== 'latest') {
+        version = {
+          id: versionId,
+          label: versionId,
+          macCommand: '',
+          linuxCommand: '',
+        };
+      }
       
       if (!version) return;
 
@@ -88,7 +98,19 @@ export function generateScript(
       lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
       
       // Use platform-specific command from the version
-      const installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
+      let installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
+
+      // If we have a template and a specific version, use the template
+      const template = os === 'macos' ? pkg.macosCommandTemplate : pkg.linuxCommandTemplate;
+      if (template && versionId !== 'latest' && versionId !== 'stable') {
+        const v = versionId;
+        const v_no_v = v.startsWith('v') ? v.substring(1) : v;
+        const v_major = v_no_v.split('.')[0];
+        installCmd = template
+          .replaceAll('${VERSION}', v)
+          .replaceAll('${VERSION_NO_V}', v_no_v)
+          .replaceAll('${VERSION_MAJOR}', v_major);
+      }
       
       // Skip if command is a comment (e.g., Arc on Linux)
       if (installCmd.trim().startsWith('#')) {

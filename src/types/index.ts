@@ -36,6 +36,10 @@ export interface Package {
   selectedVersion?: string;
   macosInstallCmd?: string;
   linuxInstallCmd?: string;
+
+  // Versioning templates
+  linuxCommandTemplate?: string;
+  macosCommandTemplate?: string;
 }
 
 export interface AppState {

@@ -48,6 +48,8 @@ export const containerApps: Package[] = [
         linuxCommand: 'K8S_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt) && curl -LO "https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubectl" && sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && rm kubectl',
       },
     ],
+    linuxCommandTemplate: 'curl -LO "https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl" && sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl',
+    macosCommandTemplate: 'brew install kubectl',
   },
   {
     id: 'minikube',
@@ -64,5 +66,7 @@ export const containerApps: Package[] = [
         linuxCommand: 'curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64',
       },
     ],
+    linuxCommandTemplate: 'curl -LO https://github.com/kubernetes/minikube/releases/download/${VERSION}/minikube-linux-amd64 && sudo install minikube-linux-amd64 /usr/local/bin/minikube',
+    macosCommandTemplate: 'brew install minikube',
   },
 ];
