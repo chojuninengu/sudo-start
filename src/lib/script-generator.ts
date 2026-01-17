@@ -1,4 +1,5 @@
 import { OS, Shell, Package } from '@/types';
+import { requiresFlatpak } from './apps';
 
 /**
  * Generates a bash script based on the selected OS, shell, and packages
@@ -33,7 +34,6 @@ export function generateScript(
 
   // Step 3: Dependency Detection & Installation
   const needsFlatpak = os === 'linux' && packages.some(pkg => requiresFlatpak(pkg));
-  const needsSnap = os === 'linux' && packages.some(pkg => requiresSnap(pkg));
 
   if (os === 'macos') {
     lines.push('# Check if Homebrew is installed');
@@ -64,18 +64,6 @@ export function generateScript(
       lines.push('');
     }
 
-    // Install snap if needed
-    if (needsSnap) {
-      lines.push('# Install Snap (required for some packages)');
-      lines.push('if ! command -v snap &> /dev/null; then');
-      lines.push('    echo "Installing Snap..."');
-      lines.push('    sudo apt-get install -y snapd');
-      lines.push('    sudo systemctl enable --now snapd.socket');
-      lines.push('else');
-      lines.push('    echo "Snap already installed"');
-      lines.push('fi');
-      lines.push('');
-    }
   }
 
   lines.push('');
@@ -90,7 +78,17 @@ export function generateScript(
     packages.forEach((pkg) => {
       // Get the selected version or use default
       const versionId = pkg.selectedVersion || pkg.defaultVersion;
-      const version = pkg.versions.find(v => v.id === versionId);
+      let version = pkg.versions.find(v => v.id === versionId);
+
+      // Synthesis for dynamic versions
+      if (!version && versionId !== 'latest') {
+        version = {
+          id: versionId,
+          label: versionId,
+          macCommand: '',
+          linuxCommand: '',
+        };
+      }
       
       if (!version) return;
 
@@ -100,7 +98,19 @@ export function generateScript(
       lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
       
       // Use platform-specific command from the version
-      const installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
+      let installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
+
+      // If we have a template and a specific version, use the template
+      const template = os === 'macos' ? pkg.macosCommandTemplate : pkg.linuxCommandTemplate;
+      if (template && versionId !== 'latest' && versionId !== 'stable') {
+        const v = versionId;
+        const v_no_v = v.startsWith('v') ? v.substring(1) : v;
+        const v_major = v_no_v.split('.')[0];
+        installCmd = template
+          .replaceAll('${VERSION}', v)
+          .replaceAll('${VERSION_NO_V}', v_no_v)
+          .replaceAll('${VERSION_MAJOR}', v_major);
+      }
       
       // Skip if command is a comment (e.g., Arc on Linux)
       if (installCmd.trim().startsWith('#')) {
@@ -136,31 +146,15 @@ export function generateScript(
   lines.push(`echo "Packages installed: ${packages.length}"`);
   lines.push('echo ""');
   
-  if (needsFlatpak || needsSnap) {
-    lines.push('echo "💡 Note: Some packages were installed via Flatpak/Snap"');
-    if (needsFlatpak) {
-      lines.push('echo "   You may need to restart for Flatpak apps to appear in your menu"');
-    }
+  if (needsFlatpak) {
+    lines.push('echo "💡 Note: Some packages were installed via Flatpak"');
+    lines.push('echo "   You may need to restart for Flatpak apps to appear in your menu"');
     lines.push('echo ""');
   }
   
   lines.push('echo "Enjoy coding! 🚀"');
 
   return lines.join('\n');
-}
-
-/**
- * Check if a package requires flatpak on Linux
- */
-function requiresFlatpak(pkg: Package): boolean {
-  return pkg.versions.some((v) => v.linuxCommand.includes('flatpak'));
-}
-
-/**
- * Check if a package requires snap on Linux
- */
-function requiresSnap(pkg: Package): boolean {
-  return pkg.versions.some((v) => v.linuxCommand.includes('snap'));
 }
 
 /**
@@ -196,9 +190,18 @@ function getCheckCommand(pkgId: string): string | null {
     'curl': 'curl',
     'terraform': 'terraform',
     'ansible': 'ansible',
+    'github-cli': 'gh',
+    'slack': 'slack',
+    'postman': 'postman',
     
     // Databases
     'postgresql': 'psql',
+    'redis': 'redis-cli',
+    'mongodb': 'mongosh',
+
+    // Terminals
+    'warp': 'warp-terminal',
+    'alacritty': 'alacritty',
   };
   
   return checkCommands[pkgId] || null;

@@ -1,0 +1,84 @@
+import { Package } from '@/types';
+
+export const mobileApps: Package[] = [
+  {
+    id: 'flutter',
+    name: 'Flutter',
+    description: '💙 Google’s UI toolkit for building natively compiled applications',
+    category: 'mobile',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'brew install --cask flutter',
+        linuxCommand: 'git clone https://github.com/flutter/flutter.git -b stable $HOME/flutter && echo "export PATH=\$PATH:\$HOME/flutter/bin" >> ~/.bashrc',
+      },
+    ],
+  },
+  {
+    id: 'react-native',
+    name: 'React Native',
+    description: '⚛️ Build native mobile apps using React',
+    category: 'mobile',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'npm install -g react-native-cli',
+        linuxCommand: 'npm install -g react-native-cli',
+      },
+    ],
+  },
+  {
+    id: 'ionic',
+    name: 'Ionic CLI',
+    description: '⚡ Cross-platform mobile app development',
+    category: 'mobile',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'npm install -g @ionic/cli',
+        linuxCommand: 'npm install -g @ionic/cli',
+      },
+    ],
+  },
+  {
+    id: 'cordova',
+    name: 'Apache Cordova',
+    description: '📱 Mobile apps with HTML, CSS & JS',
+    category: 'mobile',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'npm install -g cordova',
+        linuxCommand: 'npm install -g cordova',
+      },
+    ],
+  },
+  {
+    id: 'xcode',
+    name: 'Xcode Select',
+    description: '🛠️ Command line tools for macOS',
+    category: 'mobile',
+    platforms: { macos: true, linux: false },
+    defaultVersion: 'latest',
+    versions: [
+      {
+        id: 'latest',
+        label: 'Latest',
+        macCommand: 'xcode-select --install',
+        linuxCommand: '# Not available on Linux',
+      },
+    ],
+  },
+];

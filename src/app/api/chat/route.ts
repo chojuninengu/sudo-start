@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+let groq: Groq | null = null;
+
+function getGroqClient() {
+  if (!groq) {
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY is not defined');
+    }
+    groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+  }
+  return groq;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,10 +47,18 @@ The "action" field is OPTIONAL. Only include it if the user explicitly asks to a
 Current Package Catalog:
 - IDEs: windsurf, cursor, zed, vscode (Visual Studio Code), vim
 - Browsers: zen-browser, arc, vivaldi, brave, google-chrome, firefox
-- Languages: rust (Rust), go (Go), python3 (Python), java (Java JDK), cpp (C++), nodejs (Node.js)
+- Runtimes/Languages: rust, go, python3, java, cpp, nodejs
 - Containers: docker, podman, kubectl, minikube
-- Tools: git, curl, terraform, ansible
-- Databases: postgresql
+- Tools: git, curl, terraform, ansible, github-cli, slack, postman, figma
+- Databases: postgresql, redis, mongodb
+- Terminals: iterm2, warp, alacritty
+- Frameworks: react, vue, angular, nextjs, django, flask, express
+- DevOps: jenkins, prometheus, docker-compose
+- Data Science: jupyter, tensorflow, pandas, numpy, matplotlib
+- Mobile: flutter, react-native, ionic, cordova, xcode
+- Game Dev: godot, blender, unity, unreal-engine
+- Desktop Dev: electron, tauri, qt
+- Web Servers: nginx, apache
 
 Examples:
 User: "I want to do Rust dev"
@@ -59,7 +77,8 @@ Keep responses short and terminal-like. Use a friendly but professional tone.`,
     const startPrompt = messages.length > 0 ? messages[messages.length - 1].content : "";
     const temperature = 0.5; // Lower temp for more consistent JSON
 
-    const chatCompletion = await groq.chat.completions.create({
+    const client = getGroqClient();
+    const chatCompletion = await client.chat.completions.create({
       messages: [systemPrompt, ...messages],
       model: 'llama-3.3-70b-versatile',
       temperature: 0.7,
