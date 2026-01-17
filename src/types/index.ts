@@ -2,7 +2,7 @@
 
 export type OS = 'macos' | 'linux';
 export type Shell = 'bash' | 'zsh' | 'fish';
-export type Category = 'ide' | 'browser' | 'tool' | 'runtime' | 'database' | 'container' | 'terminal';
+export type Category = 'ide' | 'browser' | 'tool' | 'runtime' | 'database' | 'container' | 'terminal' | 'framework' | 'devops' | 'data-science' | 'mobile' | 'game-dev' | 'desktop-dev' | 'web-server';
 
 // App version with platform-specific install commands
 export interface AppVersion {

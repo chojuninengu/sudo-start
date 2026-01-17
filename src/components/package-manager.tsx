@@ -16,6 +16,13 @@ const categoryIcons: Record<string, string> = {
     container: '📦',
     database: '💾',
     terminal: '💻',
+    framework: '🧱',
+    devops: '♾️',
+    'data-science': '🧪',
+    mobile: '📱',
+    'game-dev': '🎮',
+    'desktop-dev': '🖥️',
+    'web-server': '🌍',
 };
 
 export function PackageManager() {
@@ -130,7 +137,7 @@ function PackageCard({
     const [isLoadingVersions, setIsLoadingVersions] = useState(false);
 
     // Tools that support dynamic version fetching
-    const dynamicVersionTools = ['nodejs', 'python3', 'rust', 'go', 'docker'];
+    const dynamicVersionTools = ['nodejs', 'python3', 'rust', 'go', 'docker', 'postgresql', 'redis', 'mongodb', 'flutter'];
     const supportsDynamicVersions = dynamicVersionTools.includes(pkg.id);
 
     // Fetch dynamic versions for supported tools

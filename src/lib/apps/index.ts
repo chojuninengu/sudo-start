@@ -6,6 +6,13 @@ import { toolApps } from './tools';
 import { containerApps } from './containers';
 import { databaseApps } from './databases';
 import { terminalApps } from './terminals';
+import { frameworkApps } from './frameworks';
+import { devopsApps } from './devops';
+import { dataScienceApps } from './data-science';
+import { mobileApps } from './mobile';
+import { gameDevApps } from './game-dev';
+import { desktopDevApps } from './desktop-dev';
+import { webServerApps } from './web-servers';
 
 export const appCatalog: Package[] = [
   ...ideApps,
@@ -15,6 +22,13 @@ export const appCatalog: Package[] = [
   ...containerApps,
   ...databaseApps,
   ...terminalApps,
+  ...frameworkApps,
+  ...devopsApps,
+  ...dataScienceApps,
+  ...mobileApps,
+  ...gameDevApps,
+  ...desktopDevApps,
+  ...webServerApps,
 ];
 
 /**

@@ -57,6 +57,38 @@ const VERSION_SOURCES: Record<string, {
                 .map((r) => r.tag_name.replace('v', ''));
         },
     },
+    postgresql: {
+        url: 'https://endoflife.date/api/postgresql.json',
+        parser: (data) => {
+            const releases = data as { cycle: string; latest: string }[];
+            return releases.slice(0, 5).map((r) => r.latest);
+        },
+    },
+    redis: {
+        url: 'https://api.github.com/repos/redis/redis/releases?per_page=5',
+        parser: (data) => {
+            const releases = data as { tag_name: string; prerelease: boolean }[];
+            return releases
+                .filter((r) => !r.prerelease)
+                .map((r) => r.tag_name);
+        },
+    },
+    mongodb: {
+        url: 'https://api.github.com/repos/mongodb/mongo/releases?per_page=5',
+        parser: (data) => {
+            const releases = data as { tag_name: string; prerelease: boolean }[];
+            return releases
+                .filter((r) => !r.prerelease && r.tag_name.startsWith('r'))
+                .map((r) => r.tag_name.replace('r', ''));
+        },
+    },
+    flutter: {
+        url: 'https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json',
+        parser: (data) => {
+            const releases = (data as { releases: { version: string }[] }).releases;
+            return Array.from(new Set(releases.map((r) => r.version))).slice(0, 5);
+        },
+    },
 };
 
 export async function GET(request: NextRequest) {
