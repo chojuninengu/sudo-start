@@ -81,12 +81,14 @@ export function generateScript(
       let version = pkg.versions.find(v => v.id === versionId);
 
       // Synthesis for dynamic versions
-      if (!version && versionId !== 'latest') {
+      if (!version && versionId !== 'stable' && versionId !== 'latest') {
+        // Fallback: find the stable/latest version to copy its commands if no template exists
+        const fallbackVersion = pkg.versions.find(v => v.id === 'stable' || v.id === 'latest') || pkg.versions[0];
         version = {
           id: versionId,
           label: versionId,
-          macCommand: '',
-          linuxCommand: '',
+          macCommand: fallbackVersion?.macCommand || '',
+          linuxCommand: fallbackVersion?.linuxCommand || '',
         };
       }
       

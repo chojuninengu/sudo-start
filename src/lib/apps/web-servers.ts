@@ -7,11 +7,11 @@ export const webServerApps: Package[] = [
     description: '🌐 High-performance HTTP server and reverse proxy',
     category: 'web-server',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install nginx',
         linuxCommand: 'sudo apt-get install -y nginx',
       },
@@ -23,11 +23,11 @@ export const webServerApps: Package[] = [
     description: '📜 The most widely used web server software',
     category: 'web-server',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install httpd',
         linuxCommand: 'sudo apt-get install -y apache2',
       },

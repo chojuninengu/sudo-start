@@ -16,7 +16,7 @@ export const runtimeApps: Package[] = [
         linuxCommand: 'curl -fsSL https://fnm.vercel.app/install | bash && export PATH="$HOME/.local/share/fnm:$PATH" && eval "$(fnm env --shell bash)" && fnm install --lts',
       },
       {
-        id: 'latest',
+        id: 'stable',
         label: 'Latest LTS (APT)',
         macCommand: 'brew install node',
         linuxCommand: 'curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs',
@@ -31,11 +31,11 @@ export const runtimeApps: Package[] = [
     description: '⚡ High-performance system programming (gcc/g++)',
     category: 'runtime',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'xcode-select --install',
         linuxCommand: 'sudo apt-get install -y build-essential',
       },
@@ -47,11 +47,11 @@ export const runtimeApps: Package[] = [
     description: '🐍 Powerful programming language for everything',
     category: 'runtime',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install python',
         linuxCommand: 'sudo apt-get install -y python3 python3-pip',
       },
@@ -83,11 +83,11 @@ export const runtimeApps: Package[] = [
     description: '🐹 Simple, reliable, and efficient language',
     category: 'runtime',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install go',
         linuxCommand: 'GO_VERSION=$(curl -s https://go.dev/VERSION?m=text | head -n1) && wget https://go.dev/dl/${GO_VERSION}.linux-amd64.tar.gz && sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf ${GO_VERSION}.linux-amd64.tar.gz && rm ${GO_VERSION}.linux-amd64.tar.gz && echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile',
       },
@@ -101,10 +101,10 @@ export const runtimeApps: Package[] = [
     description: '☕ General-purpose programming language',
     category: 'runtime',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
+        id: 'stable',
         label: 'Latest (OpenJDK)',
         macCommand: 'brew install openjdk',
         linuxCommand: 'sudo apt-get install -y default-jdk',

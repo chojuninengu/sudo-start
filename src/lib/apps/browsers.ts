@@ -23,11 +23,11 @@ export const browserApps: Package[] = [
     description: '🌈 The Chrome replacement. Mac Only',
     category: 'browser',
     platforms: { macos: true, linux: false },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install --cask arc',
         linuxCommand: '# Arc is not available on Linux',
       },

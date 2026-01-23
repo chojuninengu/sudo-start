@@ -58,7 +58,11 @@ export function BucketModal({ onClose }: BucketModalProps) {
                                     <div className="flex-1 min-w-0">
                                         <p className="font-medium truncate">{pkg.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            Version: {pkg.selectedVersion || pkg.defaultVersion}
+                                            Version: {(() => {
+                                                const v = pkg.selectedVersion || pkg.defaultVersion;
+                                                if (v === 'stable' || v === 'latest') return 'Stable';
+                                                return v.startsWith('v') ? v : 'v' + v;
+                                            })()}
                                         </p>
                                     </div>
                                     <button
