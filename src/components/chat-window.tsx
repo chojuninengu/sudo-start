@@ -5,6 +5,8 @@ import { appCatalog } from '@/lib/apps';
 import { ChatMessage } from '@/types';
 import { Send, X, Minimize2, Maximize2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export function ChatWindow() {
     const { isChatOpen, toggleChat, addToBucket, removeFromBucket, bucket } = useStore();
@@ -18,6 +20,18 @@ export function ChatWindow() {
     const [isLoading, setIsLoading] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to bottom
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        if (!isMinimized) {
+            scrollToBottom();
+        }
+    }, [messages, isLoading, isMinimized]);
 
     // Auto-resize textarea
     useEffect(() => {
@@ -145,12 +159,16 @@ export function ChatWindow() {
                                     }`}
                             >
                                 <div
-                                    className={`max-w-[80%] p-3 rounded-lg ${msg.role === 'user'
+                                    className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'user'
                                         ? 'bg-primary text-primary-foreground'
                                         : 'bg-muted text-foreground'
-                                        }`}
+                                        } markdown-content`}
                                 >
-                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                    >
+                                        {msg.content}
+                                    </ReactMarkdown>
                                 </div>
                             </div>
                         ))}
@@ -164,6 +182,7 @@ export function ChatWindow() {
                                 </div>
                             </div>
                         )}
+                        <div ref={messagesEndRef} />
                     </div>
 
                     {/* Input */}

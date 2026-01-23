@@ -91,10 +91,10 @@ export const runtimeApps: Package[] = [
         id: 'stable',
         label: 'Stable',
         macCommand: 'brew install go',
-        linuxCommand: 'GO_VERSION=$(curl -s https://go.dev/VERSION?m=text | head -n1) && wget https://go.dev/dl/${GO_VERSION}.linux-amd64.tar.gz && sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf ${GO_VERSION}.linux-amd64.tar.gz && rm ${GO_VERSION}.linux-amd64.tar.gz && echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile',
+        linuxCommand: "GO_VERSION=\$(curl -s https://go.dev/VERSION?m=text | head -n1) && wget https://go.dev/dl/\${GO_VERSION}.linux-amd64.tar.gz && sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf \${GO_VERSION}.linux-amd64.tar.gz && rm \${GO_VERSION}.linux-amd64.tar.gz && echo 'export PATH=\$PATH:/usr/local/go/bin' >> ~/.profile",
       },
     ],
-    linuxCommandTemplate: 'wget https://go.dev/dl/go${VERSION_NO_V}.linux-amd64.tar.gz && sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go${VERSION_NO_V}.linux-amd64.tar.gz && rm go${VERSION_NO_V}.linux-amd64.tar.gz && echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.profile',
+    linuxCommandTemplate: "wget https://go.dev/dl/go\${VERSION_NO_V}.linux-amd64.tar.gz && sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go\${VERSION_NO_V}.linux-amd64.tar.gz && rm go\${VERSION_NO_V}.linux-amd64.tar.gz && echo 'export PATH=\$PATH:/usr/local/go/bin' >> ~/.profile",
     macosCommandTemplate: 'brew install go@${VERSION}',
   },
   {
