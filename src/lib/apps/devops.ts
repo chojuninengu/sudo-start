@@ -8,6 +8,8 @@ export const devopsApps: Package[] = [
     category: 'devops',
     platforms: { macos: true, linux: true },
     defaultVersion: 'stable',
+    linuxCommandTemplate: 'wget https://github.com/jenkinsci/jenkins/releases/download/jenkins-${VERSION_NO_V}/jenkins.war',
+    macosCommandTemplate: 'brew install jenkins-lts@${VERSION_NO_V}',
     versions: [
       {
         id: 'stable',

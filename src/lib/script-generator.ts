@@ -204,6 +204,7 @@ function getCheckCommand(pkgId: string): string | null {
     // Terminals
     'warp': 'warp-terminal',
     'alacritty': 'alacritty',
+    'flutter': 'flutter',
   };
   
   return checkCommands[pkgId] || null;

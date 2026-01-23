@@ -8,6 +8,8 @@ export const mobileApps: Package[] = [
     category: 'mobile',
     platforms: { macos: true, linux: true },
     defaultVersion: 'stable',
+    linuxCommandTemplate: 'git clone https://github.com/flutter/flutter.git -b ${VERSION} $HOME/flutter && echo "export PATH=\$PATH:\$HOME/flutter/bin" >> ~/.bashrc',
+    macosCommandTemplate: 'brew install --cask flutter@${VERSION}',
     versions: [
       {
         id: 'stable',
