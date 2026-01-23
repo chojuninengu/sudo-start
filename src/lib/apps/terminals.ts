@@ -7,11 +7,11 @@ export const terminalApps: Package[] = [
     description: '🖥️ Terminal emulator for macOS',
     category: 'terminal',
     platforms: { macos: true, linux: false },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install --cask iterm2',
         linuxCommand: '# Not available on Linux',
       },
@@ -23,11 +23,11 @@ export const terminalApps: Package[] = [
     description: '🚀 The terminal for the 21st century',
     category: 'terminal',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install --cask warp',
         linuxCommand: 'curl -fsSL https://releases.warp.dev/linux/keys/warp.asc | gpg --dearmor > warp.gpg && sudo install -D -o root -g root -m 644 warp.gpg /etc/apt/keyrings/warp.gpg && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/warp.gpg] https://releases.warp.dev/linux/deb stable main" | sudo tee /etc/apt/sources.list.d/warp.list > /dev/null && rm warp.gpg && sudo apt update && sudo apt install warp-terminal -y',
       },
@@ -39,11 +39,11 @@ export const terminalApps: Package[] = [
     description: '⚡ GPU-accelerated terminal emulator',
     category: 'terminal',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install --cask alacritty',
         linuxCommand: 'sudo apt-get install -y alacritty',
       },

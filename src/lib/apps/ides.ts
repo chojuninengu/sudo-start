@@ -7,11 +7,11 @@ export const ideApps: Package[] = [
     description: '🌊 The first agentic IDE, powered by Codeium AI',
     category: 'ide',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install --cask windsurf',
         linuxCommand: 'sudo apt-get install -y wget gpg && wget -qO- "https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/windsurf.gpg" | gpg --dearmor > /tmp/windsurf-stable.gpg && sudo install -D -o root -g root -m 644 /tmp/windsurf-stable.gpg /etc/apt/keyrings/windsurf-stable.gpg && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/windsurf-stable.gpg] https://windsurf-stable.codeiumdata.com/wVxQEIWkwPUEAGf3/apt stable main" | sudo tee /etc/apt/sources.list.d/windsurf.list > /dev/null && rm -f /tmp/windsurf-stable.gpg && sudo apt-get install -y apt-transport-https && sudo apt-get update && sudo apt-get install -y windsurf',
       },
@@ -79,11 +79,11 @@ export const ideApps: Package[] = [
     description: '📟 Highly configurable text editor built for efficiency',
     category: 'ide',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install vim',
         linuxCommand: 'sudo apt-get install -y vim',
       },

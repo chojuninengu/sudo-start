@@ -7,11 +7,11 @@ export const dataScienceApps: Package[] = [
     description: '📓 Web-based interactive development environment for notebooks',
     category: 'data-science',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'pip3 install jupyterlab',
         linuxCommand: 'pip3 install jupyterlab',
       },
@@ -23,11 +23,11 @@ export const dataScienceApps: Package[] = [
     description: '🧠 End-to-end open source platform for machine learning',
     category: 'data-science',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'pip3 install tensorflow',
         linuxCommand: 'pip3 install tensorflow',
       },
@@ -39,11 +39,11 @@ export const dataScienceApps: Package[] = [
     description: '🐼 Fast, powerful, flexible data analysis tool',
     category: 'data-science',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'pip3 install pandas',
         linuxCommand: 'pip3 install pandas',
       },
@@ -55,11 +55,11 @@ export const dataScienceApps: Package[] = [
     description: '🔢 Fundamental package for scientific computing',
     category: 'data-science',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'pip3 install numpy',
         linuxCommand: 'pip3 install numpy',
       },
@@ -71,11 +71,11 @@ export const dataScienceApps: Package[] = [
     description: '📈 Comprehensive library for creating static, animated, and interactive visualizations',
     category: 'data-science',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'pip3 install matplotlib',
         linuxCommand: 'pip3 install matplotlib',
       },

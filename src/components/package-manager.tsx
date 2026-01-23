@@ -26,7 +26,7 @@ const categoryIcons: Record<string, string> = {
 };
 
 export function PackageManager() {
-    const { os, bucket, addToBucket, addDefaultAppsToBucket } = useStore();
+    const { os, bucket, addToBucket, updatePackageVersion, addDefaultAppsToBucket } = useStore();
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
     // Filter apps based on selected OS platform
@@ -43,15 +43,14 @@ export function PackageManager() {
     const isInBucket = (pkg: Package) => bucket.some((p) => p.id === pkg.id);
 
     const handleAddToBucket = (pkg: Package, versionId: string) => {
-        // If it's a dynamic version, it might not be in pkg.versions
-        const version = pkg.versions.find((v) => v.id === versionId);
-
-        // If it's not a static version, we check if it's one of the dynamic ones we fetched
-        // We'll trust the versionId passed from the PackageCard
-        addToBucket({
-            ...pkg,
-            selectedVersion: versionId,
-        });
+        if (isInBucket(pkg)) {
+            updatePackageVersion(pkg.id, versionId);
+        } else {
+            addToBucket({
+                ...pkg,
+                selectedVersion: versionId,
+            });
+        }
     };
 
     const categories = ['all', ...Array.from(new Set(availableApps.map((p) => p.category)))];
@@ -83,7 +82,7 @@ export function PackageManager() {
                 </div>
 
                 {/* Category Filters */}
-                <div className="flex gap-2 flex-wrap justify-center">
+                <div className="sticky top-20 z-30 py-4 bg-background/80 backdrop-blur-sm -mx-6 px-6 flex gap-2 flex-wrap justify-center border-b border-border/50">
                     {categories.map((cat) => (
                         <button
                             key={cat}
@@ -161,6 +160,8 @@ function PackageCard({
                 if (data.versions && data.versions.length > 0) {
                     setDynamicVersions(data.versions);
                     setSelectedVersion(data.versions[0]); // Select latest by default
+                } else {
+                    setSelectedVersion('stable');
                 }
             } catch (error) {
                 console.error('Failed to fetch versions:', error);
@@ -224,11 +225,17 @@ function PackageCard({
                         <div className="relative">
                             <select
                                 value={selectedVersion}
-                                onChange={(e) => setSelectedVersion(e.target.value)}
+                                onChange={(e) => {
+                                    const newVersion = e.target.value;
+                                    setSelectedVersion(newVersion);
+                                    if (isInBucket) {
+                                        onAddToBucket(pkg, newVersion);
+                                    }
+                                }}
                                 className="w-full px-3 py-2 rounded-lg bg-input border border-border
                            text-foreground appearance-none cursor-pointer
                            focus:outline-none focus:ring-2 focus:ring-ring"
-                                disabled={isInBucket || !isAvailable || isLoadingVersions}
+                                disabled={!isAvailable || isLoadingVersions}
                             >
                                 {versionsToShow.map((version) => (
                                     <option key={version.id} value={version.id}>

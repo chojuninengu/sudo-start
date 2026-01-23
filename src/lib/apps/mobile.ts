@@ -7,11 +7,13 @@ export const mobileApps: Package[] = [
     description: '💙 Google’s UI toolkit for building natively compiled applications',
     category: 'mobile',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
+    linuxCommandTemplate: 'git clone https://github.com/flutter/flutter.git -b ${VERSION} $HOME/flutter && echo "export PATH=\$PATH:\$HOME/flutter/bin" >> ~/.bashrc',
+    macosCommandTemplate: 'brew install --cask flutter@${VERSION}',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'brew install --cask flutter',
         linuxCommand: 'git clone https://github.com/flutter/flutter.git -b stable $HOME/flutter && echo "export PATH=\$PATH:\$HOME/flutter/bin" >> ~/.bashrc',
       },
@@ -23,11 +25,11 @@ export const mobileApps: Package[] = [
     description: '⚛️ Build native mobile apps using React',
     category: 'mobile',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'npm install -g react-native-cli',
         linuxCommand: 'npm install -g react-native-cli',
       },
@@ -39,11 +41,11 @@ export const mobileApps: Package[] = [
     description: '⚡ Cross-platform mobile app development',
     category: 'mobile',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'npm install -g @ionic/cli',
         linuxCommand: 'npm install -g @ionic/cli',
       },
@@ -55,11 +57,11 @@ export const mobileApps: Package[] = [
     description: '📱 Mobile apps with HTML, CSS & JS',
     category: 'mobile',
     platforms: { macos: true, linux: true },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'npm install -g cordova',
         linuxCommand: 'npm install -g cordova',
       },
@@ -71,11 +73,11 @@ export const mobileApps: Package[] = [
     description: '🛠️ Command line tools for macOS',
     category: 'mobile',
     platforms: { macos: true, linux: false },
-    defaultVersion: 'latest',
+    defaultVersion: 'stable',
     versions: [
       {
-        id: 'latest',
-        label: 'Latest',
+        id: 'stable',
+        label: 'Stable',
         macCommand: 'xcode-select --install',
         linuxCommand: '# Not available on Linux',
       },
