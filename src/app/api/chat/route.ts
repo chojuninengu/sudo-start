@@ -39,10 +39,10 @@ The JSON Schema is:
   "response": "Your conversational response to the user here (use Markdown)",
   "action": {
     "type": "add" | "remove",
-    "packageIds": ["id1", "id2"] 
+    "packageIds": ["id1", "id2", "id3:version"]
   }
 }
-The "action" field is OPTIONAL. Only include it if the user explicitly asks to add or remove packages, or if you are strongly recommending a setup and they accepted.
+The "action" field is OPTIONAL. You can specify a version by using "id:version" (e.g. "nodejs:20.11.0"). Only include it if the user explicitly asks to add or remove packages, or if you are strongly recommending a setup and they accepted.
 
 Current Package Catalog:
 - IDEs: windsurf, cursor, zed, vscode (Visual Studio Code), vim
