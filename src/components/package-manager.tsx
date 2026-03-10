@@ -86,6 +86,7 @@ export function PackageManager() {
                     {categories.map((cat) => (
                         <button
                             key={cat}
+                            data-category={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={`px-3 py-1.5 rounded-lg border text-sm transition-all capitalize ${
                                 selectedCategory === cat
@@ -188,6 +189,7 @@ function PackageCard({
 
     return (
         <div
+            data-package-id={pkg.id}
             className={`terminal-card rounded-lg p-5 transition-all flex flex-col ${
                 isAvailable ? 'hover:border-primary/50' : 'opacity-60'
             }`}
@@ -236,6 +238,7 @@ function PackageCard({
                            text-foreground appearance-none cursor-pointer
                            focus:outline-none focus:ring-2 focus:ring-ring"
                                 disabled={!isAvailable || isLoadingVersions}
+                                title="Select package version"
                             >
                                 {versionsToShow.map((version) => (
                                     <option key={version.id} value={version.id}>
