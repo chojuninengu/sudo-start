@@ -2,7 +2,7 @@
 
 import { useStore } from '@/lib/store';
 import { generateScript, downloadScript } from '@/lib/script-generator';
-import { Download, Copy, Check, ChevronLeft } from 'lucide-react';
+import { Download, Copy, Check, ChevronLeft, Terminal, Link } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -11,20 +11,81 @@ export function ScriptOutput() {
     const { os, shell, bucket, setCurrentStep, clearBucket } = useStore();
     const [script, setScript] = useState('');
     const [copied, setCopied] = useState(false);
+    const [executionUrl, setExecutionUrl] = useState('');
+    const [urlCopied, setUrlCopied] = useState(false);
+    const [isGeneratingUrl, setIsGeneratingUrl] = useState(false);
 
     useEffect(() => {
+        // Generate script when dependencies change
         const generatedScript = generateScript(os, shell, bucket);
         setScript(generatedScript);
     }, [os, shell, bucket]);
 
     const handleCopy = async () => {
-        await navigator.clipboard.writeText(script);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        try {
+            await navigator.clipboard.writeText(script);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            // Fallback for browsers that don't support the Clipboard API
+            const textArea = document.createElement('textarea');
+            textArea.value = script;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
     };
 
     const handleDownload = () => {
         downloadScript(script);
+    };
+
+    const handleGenerateUrl = async () => {
+        setIsGeneratingUrl(true);
+        try {
+            const response = await fetch('/api/script', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ os, shell, packages: bucket }),
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            setExecutionUrl(data.executionUrl);
+        } catch (error) {
+            console.error('Error generating execution URL:', error);
+            alert('Failed to generate execution URL. Please try again.');
+        } finally {
+            setIsGeneratingUrl(false);
+        }
+    };
+
+    const handleCopyUrl = async () => {
+        if (executionUrl) {
+            const curlCommand = `curl -sSL ${executionUrl} | bash`;
+            try {
+                await navigator.clipboard.writeText(curlCommand);
+                setUrlCopied(true);
+                setTimeout(() => setUrlCopied(false), 2000);
+            } catch {
+                // Fallback for browsers that don't support the Clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = curlCommand;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                setUrlCopied(true);
+                setTimeout(() => setUrlCopied(false), 2000);
+            }
+        }
     };
 
     const handleReset = () => {
@@ -92,7 +153,7 @@ export function ScriptOutput() {
                 <div className="terminal-card rounded-lg overflow-hidden">
                     <div className="flex items-center justify-between p-4 bg-card border-b border-border">
                         <h3 className="font-bold terminal-text">sudo-start-setup.sh</h3>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                             <button
                                 onClick={handleCopy}
                                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted
@@ -118,10 +179,28 @@ export function ScriptOutput() {
                                 <Download className="w-4 h-4" />
                                 <span>Download .sh</span>
                             </button>
+                            <button
+                                onClick={handleGenerateUrl}
+                                disabled={isGeneratingUrl}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary
+                         text-secondary-foreground hover:bg-secondary/80 transition-all disabled:opacity-50"
+                            >
+                                {isGeneratingUrl ? (
+                                    <>
+                                        <Terminal className="w-4 h-4 animate-pulse" />
+                                        <span>Generating...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link className="w-4 h-4" />
+                                        <span>Direct Execute</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
 
-                    <div className="max-h-[600px] overflow-y-auto">
+                    <div className="max-h-150 overflow-y-auto">
                         <SyntaxHighlighter
                             language="bash"
                             style={vscDarkPlus}
@@ -137,6 +216,56 @@ export function ScriptOutput() {
                         </SyntaxHighlighter>
                     </div>
                 </div>
+
+                {/* Execution URL Section */}
+                {executionUrl && (
+                    <div className="terminal-card rounded-lg p-6 space-y-4">
+                        <h3 className="text-lg font-bold terminal-text flex items-center gap-2">
+                            <Link className="w-5 h-5" />
+                            Direct Execution URL
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                            Use this URL to execute the script directly with curl:
+                        </p>
+                        <div className="bg-muted rounded-lg p-4">
+                            <code className="text-sm break-all">
+                                curl -sSL {executionUrl} | bash
+                            </code>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleCopyUrl}
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary
+                         text-primary-foreground hover:bg-primary/90 transition-all"
+                            >
+                                {urlCopied ? (
+                                    <>
+                                        <Check className="w-4 h-4" />
+                                        <span>URL Copied!</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy className="w-4 h-4" />
+                                        <span>Copy Command</span>
+                                    </>
+                                )}
+                            </button>
+                            <a
+                                href={executionUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary
+                         text-secondary-foreground hover:bg-secondary/80 transition-all"
+                            >
+                                <Terminal className="w-4 h-4" />
+                                <span>View Script</span>
+                            </a>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            ⚠️ Always review scripts before executing them. This URL will expire in 24 hours.
+                        </p>
+                    </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex justify-between items-center">

@@ -4,6 +4,7 @@ import { useStore } from '@/lib/store';
 import { MessageSquare, ShoppingCart, Terminal } from 'lucide-react';
 import { useState } from 'react';
 import { BucketModal } from './bucket-modal';
+import { SearchBar } from './search-bar';
 
 export function Navbar() {
     const { os, bucket, toggleChat } = useStore();
@@ -13,20 +14,24 @@ export function Navbar() {
         <>
             <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
                 <div className="max-w-7xl mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between gap-4">
-                        {/* Logo & Title */}
-                        <div className="flex items-center gap-3">
-                            <Terminal className="w-8 h-8 terminal-text" />
-                            <div>
-                                <h1 className="text-xl font-bold terminal-text">SudoStart</h1>
-                                <p className="text-xs text-muted-foreground">
-                                    {os?.toUpperCase()} Package Manager
-                                </p>
+                    <div className="flex flex-col gap-4">
+                        {/* Search Bar */}
+                        <SearchBar />
+                        
+                        <div className="flex items-center justify-between gap-4">
+                            {/* Logo & Title */}
+                            <div className="flex items-center gap-3">
+                                <Terminal className="w-8 h-8 terminal-text" />
+                                <div>
+                                    <h1 className="text-xl font-bold terminal-text">SudoStart</h1>
+                                    <p className="text-xs text-muted-foreground">
+                                        {os?.toUpperCase()} Package Manager
+                                    </p>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Right Actions */}
-                        <div className="flex items-center gap-3">
+                            {/* Right Actions */}
+                            <div className="flex items-center gap-3">
                             {/* Bucket Button */}
                             <div className="relative">
                                 <button
@@ -60,6 +65,7 @@ export function Navbar() {
                                 <MessageSquare className="w-5 h-5" />
                                 <span className="hidden sm:inline">Ask Root</span>
                             </button>
+                            </div>
                         </div>
                     </div>
                 </div>

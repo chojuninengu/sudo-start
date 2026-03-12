@@ -73,9 +73,9 @@ Assistant: { "response": "Hello! I'm Root. What are you building today?" }
 Keep responses short and terminal-like. Use a friendly but professional tone.`,
     };
 
-    // Force JSON mode instruction for model
-    const startPrompt = messages.length > 0 ? messages[messages.length - 1].content : "";
-    const temperature = 0.5; // Lower temp for more consistent JSON
+    // // Force JSON mode instruction for model
+    // const startPrompt = messages.length > 0 ? messages[messages.length - 1].content : "";
+    // const temperature = 0.5; // Lower temp for more consistent JSON
 
     const client = getGroqClient();
     const chatCompletion = await client.chat.completions.create({
