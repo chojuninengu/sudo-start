@@ -2,6 +2,22 @@ import { Package } from '@/types';
 
 export const runtimeApps: Package[] = [
   {
+    id: 'nvm',
+    name: 'NVM',
+    description: '🔀 Node Version Manager — easily switch between Node.js versions',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh" && nvm install --lts',
+        linuxCommand: 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh" && nvm install --lts',
+      },
+    ],
+  },
+  {
     id: 'nodejs',
     name: 'Node.js',
     description: '⚙️ JavaScript runtime built on Chrome V8 engine',
@@ -24,6 +40,28 @@ export const runtimeApps: Package[] = [
     ],
     linuxCommandTemplate: 'curl -fsSL https://deb.nodesource.com/setup_${VERSION_MAJOR}.x | sudo -E bash - && sudo apt-get install -y nodejs',
     macosCommandTemplate: 'brew install node@${VERSION_MAJOR}',
+  },
+  {
+    id: 'npm',
+    name: 'npm',
+    description: '📦 Node Package Manager — the world\'s largest software registry',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable (via Node.js)',
+        macCommand: 'brew install node && npm install -g npm@latest',
+        linuxCommand: 'curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs && sudo npm install -g npm@latest',
+      },
+      {
+        id: 'standalone',
+        label: 'Update existing npm',
+        macCommand: 'npm install -g npm@latest',
+        linuxCommand: 'sudo npm install -g npm@latest',
+      },
+    ],
   },
   {
     id: 'cpp',

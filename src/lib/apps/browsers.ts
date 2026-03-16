@@ -82,6 +82,28 @@ export const browserApps: Package[] = [
     ],
   },
   {
+    id: 'microsoft-edge',
+    name: 'Microsoft Edge',
+    description: '🔷 Fast and secure browser from Microsoft, built on Chromium',
+    category: 'browser',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install --cask microsoft-edge',
+        linuxCommand: 'curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-edge.gpg > /dev/null && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list && sudo apt-get update && sudo apt-get install -y microsoft-edge-stable',
+      },
+      {
+        id: 'beta',
+        label: 'Beta',
+        macCommand: 'brew install --cask microsoft-edge-beta',
+        linuxCommand: 'curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-edge.gpg > /dev/null && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list && sudo apt-get update && sudo apt-get install -y microsoft-edge-beta',
+      },
+    ],
+  },
+  {
     id: 'firefox',
     name: 'Firefox',
     description: '🦊 Open-source web browser by Mozilla',

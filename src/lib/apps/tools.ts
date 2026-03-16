@@ -34,6 +34,38 @@ export const toolApps: Package[] = [
     ],
   },
   {
+    id: 'zsh',
+    name: 'Zsh',
+    description: '🐚 Extended Bourne shell with improved features and scripting',
+    category: 'tool',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install zsh && chsh -s $(which zsh)',
+        linuxCommand: 'sudo apt-get install -y zsh && chsh -s $(which zsh)',
+      },
+    ],
+  },
+  {
+    id: 'oh-my-zsh',
+    name: 'Oh My Zsh',
+    description: '✨ Delightful community-driven framework for managing Zsh configuration',
+    category: 'tool',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended',
+        linuxCommand: 'sudo apt-get install -y zsh && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended',
+      },
+    ],
+  },
+  {
     id: 'terraform',
     name: 'Terraform',
     description: '🏗️ Infrastructure as Code tool',
@@ -100,6 +132,22 @@ export const toolApps: Package[] = [
         label: 'Stable',
         macCommand: 'brew install --cask slack',
         linuxCommand: 'wget "https://slack.com/filenames/linux/latest/slack-desktop-amd64.deb" -O slack.deb && sudo apt install ./slack.deb -y && rm slack.deb',
+      },
+    ],
+  },
+  {
+    id: 'discord',
+    name: 'Discord',
+    description: '🎮 Voice, video and text communication for communities',
+    category: 'tool',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install --cask discord',
+        linuxCommand: 'wget -O discord.deb "https://discord.com/api/download?platform=linux&format=deb" && sudo apt install ./discord.deb -y && rm discord.deb',
       },
     ],
   },

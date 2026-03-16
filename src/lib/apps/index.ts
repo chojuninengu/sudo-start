@@ -62,10 +62,12 @@ export function getDefaultApps(): Package[] {
         'google-chrome',
         'git',
         'curl',
+        'nvm',
         'nodejs',
         'python3',
         'docker',
         'postgresql',
+        'zsh',
     ];
     return appCatalog.filter((app) => defaultAppIds.includes(app.id));
 }
