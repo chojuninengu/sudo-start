@@ -74,6 +74,28 @@ export const ideApps: Package[] = [
     macosCommandTemplate: 'brew install --cask visual-studio-code',
   },
   {
+    id: 'intellij',
+    name: 'IntelliJ IDEA',
+    description: '🧠 The IDE for professional Java & JVM development by JetBrains',
+    category: 'ide',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'community',
+    versions: [
+      {
+        id: 'community',
+        label: 'Community (Free)',
+        macCommand: 'brew install --cask intellij-idea-ce',
+        linuxCommand: 'sudo snap install intellij-idea-community --classic',
+      },
+      {
+        id: 'ultimate',
+        label: 'Ultimate (Paid)',
+        macCommand: 'brew install --cask intellij-idea',
+        linuxCommand: 'sudo snap install intellij-idea-ultimate --classic',
+      },
+    ],
+  },
+  {
     id: 'vim',
     name: 'Vim',
     description: '📟 Highly configurable text editor built for efficiency',

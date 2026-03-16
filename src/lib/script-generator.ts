@@ -46,8 +46,7 @@ export function generateScript(
     lines.push('fi');
   } else if (os === 'linux') {
     lines.push('echo "Updating package lists..."');
-    lines.push('sudo apt-get update -y');
-    lines.push('sudo apt-get upgrade -y');
+    lines.push('sudo apt-get update');
     lines.push('');
 
     // Install flatpak if needed
@@ -135,8 +134,6 @@ export function generateScript(
     });
   }
 
-  // Skip shell configuration for faster execution
-
   // Step 6: Completion message
   lines.push('echo ""');
   lines.push('echo "================================================"');
@@ -170,32 +167,38 @@ function getCheckCommand(pkgId: string): string | null {
     'cursor': 'cursor',
     'zed': 'zed',
     'vim': 'vim',
-    
+    'intellij': 'idea',
+
     // Browsers (usually not CLI accessible, skip check)
-    
+
     // Languages & Runtimes
+    'nvm': 'nvm',
     'nodejs': 'node',
+    'npm': 'npm',
     'python3': 'python3',
     'rust': 'rustc',
     'go': 'go',
     'java': 'java',
     'cpp': 'g++',
-    
+
     // Containers
     'docker': 'docker',
     'podman': 'podman',
     'kubectl': 'kubectl',
     'minikube': 'minikube',
-    
+
     // Tools
     'git': 'git',
     'curl': 'curl',
+    'zsh': 'zsh',
+    'oh-my-zsh': 'omz',
     'terraform': 'terraform',
     'ansible': 'ansible',
     'github-cli': 'gh',
     'slack': 'slack',
+    'discord': 'discord',
     'postman': 'postman',
-    
+
     // Databases
     'postgresql': 'psql',
     'redis': 'redis-cli',
