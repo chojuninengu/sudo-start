@@ -20,6 +20,54 @@ export const databaseApps: Package[] = [
     ],
   },
   {
+    id: 'mysql',
+    name: 'MySQL',
+    description: '🐬 The world\'s most popular open-source relational database',
+    category: 'database',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install mysql && brew services start mysql',
+        linuxCommand: 'sudo apt-get install -y mysql-server && sudo systemctl start mysql && sudo systemctl enable mysql',
+      },
+    ],
+  },
+  {
+    id: 'mariadb',
+    name: 'MariaDB',
+    description: '🦭 Community-developed MySQL fork — drop-in replacement',
+    category: 'database',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install mariadb && brew services start mariadb',
+        linuxCommand: 'sudo apt-get install -y mariadb-server && sudo systemctl start mariadb && sudo systemctl enable mariadb',
+      },
+    ],
+  },
+  {
+    id: 'sqlite3',
+    name: 'SQLite',
+    description: '🗃️ Lightweight, serverless, self-contained SQL database engine',
+    category: 'database',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install sqlite',
+        linuxCommand: 'sudo apt-get install -y sqlite3',
+      },
+    ],
+  },
+  {
     id: 'redis',
     name: 'Redis',
     description: '🧠 In-memory data structure store',

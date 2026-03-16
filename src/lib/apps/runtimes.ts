@@ -2,6 +2,54 @@ import { Package } from '@/types';
 
 export const runtimeApps: Package[] = [
   {
+    id: 'ruby',
+    name: 'Ruby',
+    description: '💎 Dynamic, open-source programming language — Rails, Jekyll, CocoaPods',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install ruby && echo \'export PATH="/opt/homebrew/opt/ruby/bin:$PATH"\' >> ~/.zshrc',
+        linuxCommand: 'sudo apt-get install -y ruby-full',
+      },
+    ],
+  },
+  {
+    id: 'php',
+    name: 'PHP',
+    description: '🐘 Server-side scripting language — Laravel, WordPress, Symfony',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install php',
+        linuxCommand: 'sudo apt-get install -y php php-cli php-mbstring php-xml php-curl php-zip',
+      },
+    ],
+  },
+  {
+    id: 'kotlin',
+    name: 'Kotlin',
+    description: '🎯 Modern, concise JVM language — Android, server-side, multiplatform',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable (via SDKMAN)',
+        macCommand: 'brew install kotlin',
+        linuxCommand: 'curl -s "https://get.sdkman.io" | bash && source "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install kotlin',
+      },
+    ],
+  },
+  {
     id: 'nvm',
     name: 'NVM',
     description: '🔀 Node Version Manager — easily switch between Node.js versions',
