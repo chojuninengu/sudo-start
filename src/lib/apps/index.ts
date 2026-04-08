@@ -13,12 +13,20 @@ import { mobileApps } from './mobile';
 import { gameDevApps } from './game-dev';
 import { desktopDevApps } from './desktop-dev';
 import { webServerApps } from './web-servers';
+import { packageManagerApps } from './package-managers';
+import { buildToolApps } from './build-tools';
+import { cloudCliApps } from './cloud-clis';
+import { utilityApps } from './utilities';
+import { communicationApps } from './communication';
+import { productivityApps } from './productivity';
 
 export const appCatalog: Package[] = [
   ...ideApps,
   ...browserApps,
   ...runtimeApps,
   ...toolApps,
+  ...packageManagerApps,
+  ...buildToolApps,
   ...containerApps,
   ...databaseApps,
   ...terminalApps,
@@ -29,45 +37,42 @@ export const appCatalog: Package[] = [
   ...gameDevApps,
   ...desktopDevApps,
   ...webServerApps,
+  ...cloudCliApps,
+  ...utilityApps,
+  ...communicationApps,
+  ...productivityApps,
 ];
 
-/**
- * Helper function to get apps that are available for a specific OS
- */
 export function getAppsForOS(os: 'macos' | 'linux'): Package[] {
   return appCatalog.filter((app) => app.platforms[os]);
 }
 
-/**
- * Helper function to get apps by category
- */
 export function getAppsByCategory(category: string): Package[] {
   return appCatalog.filter((app) => app.category === category);
 }
 
-/**
- * Check if an app requires flatpak on Linux
- */
 export function requiresFlatpak(pkg: Package): boolean {
   return pkg.versions.some((v) => v.linuxCommand.includes('flatpak'));
 }
 
-/**
- * Get a default set of popular applications
- */
 export function getDefaultApps(): Package[] {
-    const defaultAppIds = [
-        'vscode',
-        'cursor',
-        'google-chrome',
-        'git',
-        'curl',
-        'nvm',
-        'nodejs',
-        'python3',
-        'docker',
-        'postgresql',
-        'zsh',
-    ];
-    return appCatalog.filter((app) => defaultAppIds.includes(app.id));
+  const defaultAppIds = [
+    'vscode',
+    'cursor',
+    'google-chrome',
+    'git',
+    'curl',
+    'wget',
+    'nvm',
+    'nodejs',
+    'npm',
+    'python3',
+    'docker',
+    'postgresql',
+    'zsh',
+    'oh-my-zsh',
+    'jq',
+    'htop',
+  ];
+  return appCatalog.filter((app) => defaultAppIds.includes(app.id));
 }

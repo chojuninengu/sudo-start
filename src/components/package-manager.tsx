@@ -8,277 +8,256 @@ import { useState, useMemo, useEffect } from 'react';
 import { Navbar } from './navbar';
 
 const categoryIcons: Record<string, string> = {
-    all: '🗂️',
-    ide: '📝',
-    browser: '🌐',
-    tool: '🔧',
-    runtime: '⚙️',
-    container: '📦',
-    database: '💾',
-    terminal: '💻',
-    framework: '🧱',
-    devops: '♾️',
-    'data-science': '🧪',
-    mobile: '📱',
-    'game-dev': '🎮',
-    'desktop-dev': '🖥️',
-    'web-server': '🌍',
+  all: '🗂️',
+  ide: '📝',
+  browser: '🌐',
+  tool: '🔧',
+  runtime: '⚙️',
+  container: '📦',
+  database: '💾',
+  terminal: '💻',
+  framework: '🧱',
+  devops: '♾️',
+  'data-science': '🧪',
+  mobile: '📱',
+  'game-dev': '🎮',
+  'desktop-dev': '🖥️',
+  'web-server': '🌍',
+  'package-manager': '📌',
+  'build-tool': '🔨',
+  cloud: '☁️',
+  utility: '🛠️',
+  communication: '💬',
+  productivity: '🚀',
 };
 
 export function PackageManager() {
-    const { os, bucket, addToBucket, updatePackageVersion, addDefaultAppsToBucket } = useStore();
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const { os, bucket, addToBucket, updatePackageVersion, addDefaultAppsToBucket } = useStore();
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-    // Filter apps based on selected OS platform
-    const availableApps = useMemo(() => {
-        if (!os) return appCatalog;
-        return getAppsForOS(os);
-    }, [os]);
+  const availableApps = useMemo(() => {
+    if (!os) return appCatalog;
+    return getAppsForOS(os);
+  }, [os]);
 
-    const filteredPackages =
-        selectedCategory === 'all'
-            ? availableApps
-            : availableApps.filter((p) => p.category === selectedCategory);
+  const filteredPackages =
+    selectedCategory === 'all'
+      ? availableApps
+      : availableApps.filter((p) => p.category === selectedCategory);
 
-    const isInBucket = (pkg: Package) => bucket.some((p) => p.id === pkg.id);
+  const isInBucket = (pkg: Package) => bucket.some((p) => p.id === pkg.id);
 
-    const handleAddToBucket = (pkg: Package, versionId: string) => {
-        if (isInBucket(pkg)) {
-            updatePackageVersion(pkg.id, versionId);
-        } else {
-            addToBucket({
-                ...pkg,
-                selectedVersion: versionId,
-            });
-        }
-    };
+  const handleAddToBucket = (pkg: Package, versionId: string) => {
+    if (isInBucket(pkg)) {
+      updatePackageVersion(pkg.id, versionId);
+    } else {
+      addToBucket({ ...pkg, selectedVersion: versionId });
+    }
+  };
 
-    const categories = ['all', ...Array.from(new Set(availableApps.map((p) => p.category)))];
+  const categories = ['all', ...Array.from(new Set(availableApps.map((p) => p.category)))];
 
-    return (
-        <div className="min-h-screen scan-lines relative">
-            {/* Fixed Navbar */}
-            <Navbar />
+  return (
+    <div className="min-h-screen scan-lines relative">
+      <Navbar />
 
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-                {/* Header */}
-                <div className="text-center">
-                    <h2 className="text-4xl font-bold terminal-text">
-                        SudoStart Package Manager
-                    </h2>
-                    <div className="flex justify-center items-center gap-4 mt-2">
-                        <p className="text-muted-foreground">
-                            Select from the curated list of packages below to generate your script.
-                        </p>
-                        <button
-                            onClick={addDefaultAppsToBucket}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-primary/50 text-primary hover:bg-primary/10 transition-all"
-                        >
-                            <Wand2 className="w-4 h-4" />
-                            <span>Add Defaults</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Category Filters */}
-                <div className="sticky top-20 z-30 py-4 bg-background/80 backdrop-blur-sm -mx-6 px-6 flex gap-2 flex-wrap justify-center border-b border-border/50">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-3 py-1.5 rounded-lg border text-sm transition-all capitalize ${
-                                selectedCategory === cat
-                                    ? 'border-primary terminal-glow bg-primary/10 terminal-text'
-                                    : 'border-border hover:border-primary/50'
-                            }`}
-                        >
-                            {categoryIcons[cat] || '📁'} {cat}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Package Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredPackages.map((pkg) => (
-                        <PackageCard
-                            key={pkg.id}
-                            pkg={pkg}
-                            os={os}
-                            isInBucket={isInBucket(pkg)}
-                            onAddToBucket={handleAddToBucket}
-                        />
-                    ))}
-                </div>
-
-                {/* Empty State */}
-                {filteredPackages.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground">
-                        <p>No packages found in this category.</p>
-                    </div>
-                )}
-            </div>
+      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h2 className="text-4xl font-bold terminal-text">SudoStart Package Manager</h2>
+          <div className="flex justify-center items-center gap-4 mt-2">
+            <p className="text-muted-foreground">
+              Select from the curated list of packages below to generate your script.
+            </p>
+            <button
+              onClick={addDefaultAppsToBucket}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-primary/50 text-primary hover:bg-primary/10 transition-all"
+            >
+              <Wand2 className="w-4 h-4" />
+              <span>Add Defaults</span>
+            </button>
+          </div>
         </div>
-    );
+
+        {/* Category Filters */}
+        <div className="sticky top-20 z-30 py-4 bg-background/80 backdrop-blur-sm -mx-6 px-6 flex gap-2 flex-wrap justify-center border-b border-border/50">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1.5 rounded-lg border text-sm transition-all capitalize ${
+                selectedCategory === cat
+                  ? 'border-primary terminal-glow bg-primary/10 terminal-text'
+                  : 'border-border hover:border-primary/50'
+              }`}
+            >
+              {categoryIcons[cat] || '📁'} {cat.replace('-', ' ')}
+            </button>
+          ))}
+        </div>
+
+        {/* Package Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredPackages.map((pkg) => (
+            <PackageCard
+              key={pkg.id}
+              pkg={pkg}
+              os={os}
+              isInBucket={isInBucket(pkg)}
+              onAddToBucket={handleAddToBucket}
+            />
+          ))}
+        </div>
+
+        {filteredPackages.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>No packages found in this category.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function PackageCard({
-    pkg,
-    os,
-    isInBucket,
-    onAddToBucket,
+  pkg,
+  os,
+  isInBucket,
+  onAddToBucket,
 }: {
-    pkg: Package;
-    os: 'macos' | 'linux' | null;
-    isInBucket: boolean;
-    onAddToBucket: (pkg: Package, versionId: string) => void;
+  pkg: Package;
+  os: 'macos' | 'linux' | null;
+  isInBucket: boolean;
+  onAddToBucket: (pkg: Package, versionId: string) => void;
 }) {
-    const [selectedVersion, setSelectedVersion] = useState(pkg.defaultVersion);
-    const [dynamicVersions, setDynamicVersions] = useState<string[]>([]);
-    const [isLoadingVersions, setIsLoadingVersions] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState(pkg.defaultVersion);
+  const [dynamicVersions, setDynamicVersions] = useState<string[]>([]);
+  const [isLoadingVersions, setIsLoadingVersions] = useState(false);
 
-    // Tools that support dynamic version fetching
-    const dynamicVersionTools = [
-        'nodejs', 'python3', 'rust', 'go', 'docker', 'postgresql', 'redis', 'mongodb', 'flutter',
-        'vscode', 'zed', 'terraform', 'ansible', 'github-cli', 'podman', 'kubectl', 'minikube',
-        'jenkins', 'prometheus', 'docker-compose', 'react', 'vue', 'angular', 'nextjs',
-        'django', 'flask', 'express', 'nginx', 'godot', 'blender', 'electron', 'tauri', 'react-native'
-    ];
-    const supportsDynamicVersions = dynamicVersionTools.includes(pkg.id);
+  const dynamicVersionTools = [
+    'nodejs', 'python3', 'rust', 'go', 'docker', 'postgresql', 'redis', 'mongodb', 'flutter',
+    'vscode', 'zed', 'terraform', 'ansible', 'github-cli', 'podman', 'kubectl', 'minikube',
+    'jenkins', 'prometheus', 'docker-compose', 'react', 'vue', 'angular', 'nextjs',
+    'django', 'flask', 'express', 'nginx', 'godot', 'blender', 'electron', 'tauri', 'react-native',
+  ];
+  const supportsDynamicVersions = dynamicVersionTools.includes(pkg.id);
 
-    // Fetch dynamic versions for supported tools
-    useEffect(() => {
-        if (!supportsDynamicVersions) return;
-
-        const fetchVersions = async () => {
-            setIsLoadingVersions(true);
-            try {
-                const toolId = pkg.id === 'python3' ? 'python' : pkg.id;
-                const response = await fetch(`/api/versions?tool=${toolId}`);
-                const data = await response.json();
-
-                if (data.versions && data.versions.length > 0) {
-                    setDynamicVersions(data.versions);
-                    setSelectedVersion(data.versions[0]); // Select latest by default
-                } else {
-                    setSelectedVersion('stable');
-                }
-            } catch (error) {
-                console.error('Failed to fetch versions:', error);
-            } finally {
-                setIsLoadingVersions(false);
-            }
-        };
-
-        fetchVersions();
-    }, [pkg.id, supportsDynamicVersions]);
-
-    const handleAdd = () => {
-        onAddToBucket(pkg, selectedVersion);
+  useEffect(() => {
+    if (!supportsDynamicVersions) return;
+    const fetchVersions = async () => {
+      setIsLoadingVersions(true);
+      try {
+        const toolId = pkg.id === 'python3' ? 'python' : pkg.id;
+        const response = await fetch(`/api/versions?tool=${toolId}`);
+        const data = await response.json();
+        if (data.versions && data.versions.length > 0) {
+          setDynamicVersions(data.versions);
+          setSelectedVersion(data.versions[0]);
+        } else {
+          setSelectedVersion('stable');
+        }
+      } catch {
+        // silently fall back
+      } finally {
+        setIsLoadingVersions(false);
+      }
     };
+    fetchVersions();
+  }, [pkg.id, supportsDynamicVersions]);
 
-    // Check if app is available for current OS
-    const isAvailable = os ? pkg.platforms[os] : true;
+  const handleAdd = () => onAddToBucket(pkg, selectedVersion);
 
-    // Determine which versions to show
-    const versionsToShow =
-        supportsDynamicVersions && dynamicVersions.length > 0
-            ? dynamicVersions.map((v) => ({ id: v, label: v }))
-            : pkg.versions.map((v) => ({ id: v.id, label: v.label }));
+  const isAvailable = os ? pkg.platforms[os] : true;
 
-    return (
-        <div
-            className={`terminal-card rounded-lg p-5 transition-all flex flex-col ${
-                isAvailable ? 'hover:border-primary/50' : 'opacity-60'
-            }`}
-        >
-            <div className="flex-1">
-                <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                            <h3 className="text-xl font-bold terminal-text">{pkg.name}</h3>
-                            {!isAvailable && (
-                                <span className="text-xs px-2 py-1 rounded bg-destructive/20 text-destructive border border-destructive flex items-center gap-1">
-                                    <AlertCircle className="w-3 h-3" />
-                                    {os === 'linux' ? 'Mac Only' : 'Linux Only'}
-                                </span>
-                            )}
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{pkg.description}</p>
-                        <span className="inline-block mt-2 text-xs px-2 py-1 rounded border border-border capitalize">
-                            {categoryIcons[pkg.category]} {pkg.category}
-                        </span>
-                    </div>
-                </div>
+  const versionsToShow =
+    supportsDynamicVersions && dynamicVersions.length > 0
+      ? dynamicVersions.map((v) => ({ id: v, label: v }))
+      : pkg.versions.map((v) => ({ id: v.id, label: v.label }));
 
-                {/* Version Selector */}
-                {(versionsToShow.length > 1 || supportsDynamicVersions) && (
-                    <div className="space-y-2 mt-4">
-                        <label className="text-sm text-muted-foreground flex items-center gap-2">
-                            Version:
-                            {isLoadingVersions && (
-                                <span className="text-xs terminal-text animate-pulse">
-                                    fetching...
-                                </span>
-                            )}
-                        </label>
-                        <div className="relative">
-                            <select
-                                value={selectedVersion}
-                                onChange={(e) => {
-                                    const newVersion = e.target.value;
-                                    setSelectedVersion(newVersion);
-                                    if (isInBucket) {
-                                        onAddToBucket(pkg, newVersion);
-                                    }
-                                }}
-                                className="w-full px-3 py-2 rounded-lg bg-input border border-border
-                           text-foreground appearance-none cursor-pointer
-                           focus:outline-none focus:ring-2 focus:ring-ring"
-                                disabled={!isAvailable || isLoadingVersions}
-                            >
-                                {versionsToShow.map((version) => (
-                                    <option key={version.id} value={version.id}>
-                                        {version.label}
-                                    </option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
-                        </div>
-                    </div>
-                )}
+  return (
+    <div
+      className={`terminal-card rounded-lg p-5 transition-all flex flex-col ${
+        isAvailable ? 'hover:border-primary/50' : 'opacity-60'
+      }`}
+    >
+      <div className="flex-1">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold terminal-text">{pkg.name}</h3>
+              {!isAvailable && (
+                <span className="text-xs px-2 py-1 rounded bg-destructive/20 text-destructive border border-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {os === 'linux' ? 'Mac Only' : 'Linux Only'}
+                </span>
+              )}
             </div>
-
-            {/* Add Button */}
-            <button
-                onClick={handleAdd}
-                disabled={isInBucket || !isAvailable}
-                className={`w-full py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 mt-4
-          ${
-              isInBucket
-                  ? 'bg-primary/20 text-primary cursor-not-allowed'
-                  : !isAvailable
-                  ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90 terminal-glow'
-          }`}
-            >
-                {isInBucket ? (
-                    <>
-                        <Check className="w-4 h-4" />
-                        Added to Root
-                    </>
-                ) : !isAvailable ? (
-                    <>
-                        <AlertCircle className="w-4 h-4" />
-                        Not Available on {os?.toUpperCase()}
-                    </>
-                ) : (
-                    <>
-                        <Plus className="w-4 h-4" />
-                        Add to Root
-                    </>
-                )}
-            </button>
+            <p className="text-sm text-muted-foreground mt-1">{pkg.description}</p>
+            <span className="inline-block mt-2 text-xs px-2 py-1 rounded border border-border capitalize">
+              {categoryIcons[pkg.category] || '📁'} {pkg.category.replace('-', ' ')}
+            </span>
+          </div>
         </div>
-    );
+
+        {(versionsToShow.length > 1 || supportsDynamicVersions) && (
+          <div className="space-y-2 mt-4">
+            <label className="text-sm text-muted-foreground flex items-center gap-2">
+              Version:
+              {isLoadingVersions && (
+                <span className="text-xs terminal-text animate-pulse">fetching...</span>
+              )}
+            </label>
+            <div className="relative">
+              <select
+                value={selectedVersion}
+                onChange={(e) => {
+                  const newVersion = e.target.value;
+                  setSelectedVersion(newVersion);
+                  if (isInBucket) onAddToBucket(pkg, newVersion);
+                }}
+                className="w-full px-3 py-2 rounded-lg bg-input border border-border text-foreground appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                disabled={!isAvailable || isLoadingVersions}
+              >
+                {versionsToShow.map((version) => (
+                  <option key={version.id} value={version.id}>
+                    {version.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={handleAdd}
+        disabled={isInBucket || !isAvailable}
+        className={`w-full py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 mt-4 ${
+          isInBucket
+            ? 'bg-primary/20 text-primary cursor-not-allowed'
+            : !isAvailable
+            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+            : 'bg-primary text-primary-foreground hover:bg-primary/90 terminal-glow'
+        }`}
+      >
+        {isInBucket ? (
+          <>
+            <Check className="w-4 h-4" />
+            Added to Root
+          </>
+        ) : !isAvailable ? (
+          <>
+            <AlertCircle className="w-4 h-4" />
+            Not Available on {os?.toUpperCase()}
+          </>
+        ) : (
+          <>
+            <Plus className="w-4 h-4" />
+            Add to Root
+          </>
+        )}
+      </button>
+    </div>
+  );
 }

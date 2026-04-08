@@ -121,7 +121,7 @@ export function ScriptOutput() {
                         </div>
                     </div>
 
-                    <div className="max-h-[600px] overflow-y-auto">
+                    <div className="max-height-[600px] overflow-y-auto">
                         <SyntaxHighlighter
                             language="bash"
                             style={vscDarkPlus}

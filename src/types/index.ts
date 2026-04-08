@@ -2,12 +2,32 @@
 
 export type OS = 'macos' | 'linux';
 export type Shell = 'bash' | 'zsh' | 'fish';
-export type Category = 'ide' | 'browser' | 'tool' | 'runtime' | 'database' | 'container' | 'terminal' | 'framework' | 'devops' | 'data-science' | 'mobile' | 'game-dev' | 'desktop-dev' | 'web-server';
+export type Category =
+  | 'ide'
+  | 'browser'
+  | 'tool'
+  | 'runtime'
+  | 'database'
+  | 'container'
+  | 'terminal'
+  | 'framework'
+  | 'devops'
+  | 'data-science'
+  | 'mobile'
+  | 'game-dev'
+  | 'desktop-dev'
+  | 'web-server'
+  | 'package-manager'
+  | 'build-tool'
+  | 'cloud'
+  | 'utility'
+  | 'communication'
+  | 'productivity';
 
 // App version with platform-specific install commands
 export interface AppVersion {
   id: string;
-  label: string; // e.g. "Stable", "Beta", "Insiders"
+  label: string;
   macCommand: string;
   linuxCommand: string;
 }
@@ -23,16 +43,16 @@ export interface Package {
   name: string;
   description: string;
   category: Category;
-  icon?: string; // Optional icon URL or icon name
-  
+  icon?: string;
+
   // Platform support
   platforms: PlatformSupport;
-  
+
   // Version support
   defaultVersion: string;
   versions: AppVersion[];
-  
-  // Legacy support for backward compatibility
+
+  // Legacy support
   selectedVersion?: string;
   macosInstallCmd?: string;
   linuxInstallCmd?: string;
@@ -43,21 +63,13 @@ export interface Package {
 }
 
 export interface AppState {
-  // OS and Shell selection
   os: OS | null;
   shell: Shell | null;
-  
-  // Package bucket (cart)
   bucket: Package[];
-  
-  // Generated script
   generatedScript: string;
-  
-  // UI state
   currentStep: 'boot' | 'catalog' | 'chat' | 'output';
   isChatOpen: boolean;
-  
-  // Actions
+
   setOS: (os: OS) => void;
   setShell: (shell: Shell) => void;
   addToBucket: (pkg: Package) => void;
@@ -74,4 +86,3 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
-

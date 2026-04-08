@@ -4,7 +4,7 @@ export const terminalApps: Package[] = [
   {
     id: 'iterm2',
     name: 'iTerm2',
-    description: '🖥️ Terminal emulator for macOS',
+    description: '🖥️ Terminal emulator for macOS with powerful features',
     category: 'terminal',
     platforms: { macos: true, linux: false },
     defaultVersion: 'stable',
@@ -20,7 +20,7 @@ export const terminalApps: Package[] = [
   {
     id: 'warp',
     name: 'Warp',
-    description: '🚀 The terminal for the 21st century',
+    description: '🚀 The terminal for the 21st century with AI built in',
     category: 'terminal',
     platforms: { macos: true, linux: true },
     defaultVersion: 'stable',
@@ -36,7 +36,7 @@ export const terminalApps: Package[] = [
   {
     id: 'alacritty',
     name: 'Alacritty',
-    description: '⚡ GPU-accelerated terminal emulator',
+    description: '⚡ GPU-accelerated terminal emulator — fast and minimal',
     category: 'terminal',
     platforms: { macos: true, linux: true },
     defaultVersion: 'stable',
@@ -46,6 +46,54 @@ export const terminalApps: Package[] = [
         label: 'Stable',
         macCommand: 'brew install --cask alacritty',
         linuxCommand: 'sudo apt-get install -y alacritty',
+      },
+    ],
+  },
+  {
+    id: 'kitty',
+    name: 'Kitty',
+    description: '🐱 Fast, feature-rich GPU-based terminal emulator',
+    category: 'terminal',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install --cask kitty',
+        linuxCommand: 'curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin && ln -sf ~/.local/kitty.app/bin/kitty ~/.local/kitty.app/bin/kitten ~/.local/bin/',
+      },
+    ],
+  },
+  {
+    id: 'hyper',
+    name: 'Hyper',
+    description: '💻 Electron-based terminal built on web technologies',
+    category: 'terminal',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install --cask hyper',
+        linuxCommand: 'wget https://releases.hyper.is/download/deb -O hyper.deb && sudo apt install ./hyper.deb -y && rm hyper.deb',
+      },
+    ],
+  },
+  {
+    id: 'ghostty',
+    name: 'Ghostty',
+    description: '👻 Fast, native terminal emulator with platform-native UI',
+    category: 'terminal',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install --cask ghostty',
+        linuxCommand: 'sudo apt-get install -y ghostty',
       },
     ],
   },
