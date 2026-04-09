@@ -1,9 +1,6 @@
 import { OS, Shell, Package } from '@/types';
 import { requiresFlatpak } from './apps';
 
-/**
- * Generates a bash script based on the selected OS, shell, and packages
- */
 export function generateScript(
   os: OS | null,
   shell: Shell | null,
@@ -15,7 +12,6 @@ export function generateScript(
 
   const lines: string[] = [];
 
-  // Step 1: Shebang
   lines.push('#!/bin/bash');
   lines.push('');
   lines.push('# SudoStart - Zero-to-Code OS Setup Script');
@@ -24,15 +20,12 @@ export function generateScript(
   lines.push('');
   lines.push('set -e  # Exit on error');
   lines.push('');
-
-  // Step 2: Header
   lines.push('echo "================================================"');
   lines.push('echo "  SudoStart - System Setup Initialization"');
   lines.push('echo "================================================"');
   lines.push('echo ""');
   lines.push('');
 
-  // Step 3: Dependency Detection & Installation
   const needsFlatpak = os === 'linux' && packages.some(pkg => requiresFlatpak(pkg));
 
   if (os === 'macos') {
@@ -46,11 +39,9 @@ export function generateScript(
     lines.push('fi');
   } else if (os === 'linux') {
     lines.push('echo "Updating package lists..."');
-    lines.push('sudo apt-get update -y');
-    // lines.push('sudo apt-get upgrade -y');
+    lines.push('sudo apt-get update');
     lines.push('');
 
-    // Install flatpak if needed
     if (needsFlatpak) {
       lines.push('# Install Flatpak (required for some packages)');
       lines.push('if ! command -v flatpak &> /dev/null; then');
@@ -63,12 +54,10 @@ export function generateScript(
       lines.push('fi');
       lines.push('');
     }
-
   }
 
   lines.push('');
 
-  // Step 4: Install packages
   if (packages.length > 0) {
     lines.push('echo ""');
     lines.push('echo "Installing packages..."');
@@ -76,13 +65,10 @@ export function generateScript(
     lines.push('');
 
     packages.forEach((pkg) => {
-      // Get the selected version or use default
       const versionId = pkg.selectedVersion || pkg.defaultVersion;
       let version = pkg.versions.find(v => v.id === versionId);
 
-      // Synthesis for dynamic versions
       if (!version && versionId !== 'stable' && versionId !== 'latest') {
-        // Fallback: find the stable/latest version to copy its commands if no template exists
         const fallbackVersion = pkg.versions.find(v => v.id === 'stable' || v.id === 'latest') || pkg.versions[0];
         version = {
           id: versionId,
@@ -91,18 +77,14 @@ export function generateScript(
           linuxCommand: fallbackVersion?.linuxCommand || '',
         };
       }
-      
+
       if (!version) return;
 
-      // Determine the command to check for existence
       const checkCommand = getCheckCommand(pkg.id);
-
       lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
-      
-      // Use platform-specific command from the version
+
       let installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
 
-      // If we have a template and a specific version, use the template
       const template = os === 'macos' ? pkg.macosCommandTemplate : pkg.linuxCommandTemplate;
       if (template && versionId !== 'latest' && versionId !== 'stable') {
         const v = versionId;
@@ -113,12 +95,10 @@ export function generateScript(
           .replaceAll('${VERSION_NO_V}', v_no_v)
           .replaceAll('${VERSION_MAJOR}', v_major);
       }
-      
-      // Skip if command is a comment (e.g., Arc on Linux)
+
       if (installCmd.trim().startsWith('#')) {
         lines.push(`echo "⚠️  ${pkg.name} is not available on ${os.toUpperCase()}"`);
       } else if (checkCommand) {
-        // Add existence check
         lines.push(`if ! command -v ${checkCommand} &> /dev/null; then`);
         lines.push(`    echo "→ Installing ${pkg.name}..."`);
         lines.push(`    ${installCmd}`);
@@ -126,7 +106,6 @@ export function generateScript(
         lines.push(`    echo "✓ ${pkg.name} already installed, skipping."`);
         lines.push('fi');
       } else {
-        // No check available, just install
         lines.push(`echo "→ Installing ${pkg.name}..."`);
         lines.push(installCmd);
       }
@@ -135,9 +114,6 @@ export function generateScript(
     });
   }
 
-  // Skip shell configuration for faster execution
-
-  // Step 6: Completion message
   lines.push('echo ""');
   lines.push('echo "================================================"');
   lines.push('echo "  System Ready. Welcome to your new machine!"');
@@ -147,22 +123,18 @@ export function generateScript(
   lines.push(`echo "Shell: ${shell}"`);
   lines.push(`echo "Packages installed: ${packages.length}"`);
   lines.push('echo ""');
-  
+
   if (needsFlatpak) {
     lines.push('echo "💡 Note: Some packages were installed via Flatpak"');
     lines.push('echo "   You may need to restart for Flatpak apps to appear in your menu"');
     lines.push('echo ""');
   }
-  
+
   lines.push('echo "Enjoy coding! 🚀"');
 
   return lines.join('\n');
 }
 
-/**
- * Get the CLI command name to check if a package is installed
- * Returns null if no reliable check is available
- */
 function getCheckCommand(pkgId: string): string | null {
   const checkCommands: Record<string, string> = {
     // IDEs
@@ -170,49 +142,93 @@ function getCheckCommand(pkgId: string): string | null {
     'cursor': 'cursor',
     'zed': 'zed',
     'vim': 'vim',
-    
-    // Browsers (usually not CLI accessible, skip check)
-    
+    'intellij': 'idea',
+
     // Languages & Runtimes
+    'nvm': 'nvm',
     'nodejs': 'node',
+    'npm': 'npm',
     'python3': 'python3',
+    'ruby': 'ruby',
+    'php': 'php',
+    'kotlin': 'kotlinc',
     'rust': 'rustc',
     'go': 'go',
     'java': 'java',
     'cpp': 'g++',
-    
+
+    // Package Managers
+    'pnpm': 'pnpm',
+    'yarn': 'yarn',
+    'pyenv': 'pyenv',
+    'rbenv': 'rbenv',
+    'sdkman': 'sdk',
+
+    // Build Tools
+    'make': 'make',
+    'cmake': 'cmake',
+    'gradle': 'gradle',
+    'maven': 'mvn',
+
     // Containers
     'docker': 'docker',
+    'docker-desktop': 'docker',
     'podman': 'podman',
     'kubectl': 'kubectl',
     'minikube': 'minikube',
-    
+
+    // Cloud CLIs
+    'aws-cli': 'aws',
+    'gcloud': 'gcloud',
+    'azure-cli': 'az',
+
     // Tools
     'git': 'git',
     'curl': 'curl',
+    'wget': 'wget',
+    'jq': 'jq',
+    'htop': 'htop',
+    'tmux': 'tmux',
+    'openssh': 'ssh',
+    'ngrok': 'ngrok',
+    'zsh': 'zsh',
+    'oh-my-zsh': 'omz',
     'terraform': 'terraform',
     'ansible': 'ansible',
     'github-cli': 'gh',
-    'slack': 'slack',
     'postman': 'postman',
-    
+    'insomnia': 'insomnia',
+
     // Databases
     'postgresql': 'psql',
+    'mysql': 'mysql',
+    'mariadb': 'mariadb',
+    'sqlite3': 'sqlite3',
     'redis': 'redis-cli',
     'mongodb': 'mongosh',
 
     // Terminals
     'warp': 'warp-terminal',
     'alacritty': 'alacritty',
+    'kitty': 'kitty',
+    'hyper': 'hyper',
+    'ghostty': 'ghostty',
+
+    // Communication
+    'zoom': 'zoom',
+    'telegram': 'telegram-desktop',
+
+    // Productivity
+    'bitwarden': 'bitwarden',
+    'raycast': 'raycast',
+
+    // Mobile
     'flutter': 'flutter',
   };
-  
+
   return checkCommands[pkgId] || null;
 }
 
-/**
- * Download the script as a .sh file
- */
 export function downloadScript(script: string, filename: string = 'sudo-start-setup.sh') {
   const blob = new Blob([script], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);

@@ -8,9 +8,7 @@ function getGroqClient() {
     if (!process.env.GROQ_API_KEY) {
       throw new Error('GROQ_API_KEY is not defined');
     }
-    groq = new Groq({
-      apiKey: process.env.GROQ_API_KEY,
-    });
+    groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
   return groq;
 }
@@ -26,7 +24,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // System prompt for "Root" - the AI assistant
     const systemPrompt = {
       role: 'system',
       content: `You are "Root", an expert Unix system administrator and helpful AI assistant for the SudoStart application.
@@ -39,43 +36,58 @@ The JSON Schema is:
   "response": "Your conversational response to the user here (use Markdown)",
   "action": {
     "type": "add" | "remove",
-    "packageIds": ["id1", "id2"] 
+    "packageIds": ["id1", "id2", "id3:version"]
   }
 }
-The "action" field is OPTIONAL. Only include it if the user explicitly asks to add or remove packages, or if you are strongly recommending a setup and they accepted.
+The "action" field is OPTIONAL. Only include it if the user explicitly asks to add or remove packages, or strongly recommends a setup they accepted.
 
-Current Package Catalog:
-- IDEs: windsurf, cursor, zed, vscode (Visual Studio Code), vim
-- Browsers: zen-browser, arc, vivaldi, brave, google-chrome, firefox
-- Runtimes/Languages: rust, go, python3, java, cpp, nodejs
-- Containers: docker, podman, kubectl, minikube
-- Tools: git, curl, terraform, ansible, github-cli, slack, postman, figma
-- Databases: postgresql, redis, mongodb
-- Terminals: iterm2, warp, alacritty
-- Frameworks: react, vue, angular, nextjs, django, flask, express
-- DevOps: jenkins, prometheus, docker-compose
-- Data Science: jupyter, tensorflow, pandas, numpy, matplotlib
-- Mobile: flutter, react-native, ionic, cordova, xcode
-- Game Dev: godot, blender, unity, unreal-engine
-- Desktop Dev: electron, tauri, qt
-- Web Servers: nginx, apache
+Full Package Catalog:
 
-Examples:
-User: "I want to do Rust dev"
-Assistant: { "response": "For Rust, you'll need the compiler and a good IDE. I recommend Rust (rustup) and Zed.", "action": { "type": "add", "packageIds": ["rust", "zed"] } }
+IDEs: windsurf, cursor, zed, vscode, vim, intellij
+Browsers: zen-browser, arc, vivaldi, brave, google-chrome, microsoft-edge, firefox
+Runtimes: nvm, nodejs, npm, python3, ruby, php, kotlin, rust, go, java, cpp
+Package Managers: pnpm, yarn, pyenv, rbenv, sdkman
+Build Tools: make, cmake, gradle, maven
+Containers: docker, docker-desktop, podman, kubectl, minikube
+Cloud CLIs: aws-cli, gcloud, azure-cli
+Databases: postgresql, mysql, mariadb, sqlite3, redis, mongodb
+Terminals: iterm2, warp, alacritty, kitty, hyper, ghostty
+Frameworks: react, vue, angular, nextjs, django, flask, express
+DevOps: jenkins, prometheus, docker-compose
+Data Science: jupyter, tensorflow, pandas, numpy, matplotlib
+Mobile: flutter, react-native, ionic, cordova, xcode
+Game Dev: godot, blender, unity, unreal-engine
+Desktop Dev: electron, tauri, qt
+Web Servers: nginx, apache
+Utilities: jq, wget, htop, tmux, openssh, ngrok, insomnia
+Communication: zoom, microsoft-teams, telegram, slack, discord
+Productivity: rectangle, raycast, 1password, bitwarden, docker-desktop
+Tools: git, curl, zsh, oh-my-zsh, terraform, ansible, github-cli, postman, figma
+
+Example interactions:
+User: "I want to do Rust backend dev"
+Assistant: { "response": "For Rust backend dev, I recommend Rust, Zed (great Rust support), and essential CLI tools.", "action": { "type": "add", "packageIds": ["rust", "zed", "git", "curl"] } }
+
+User: "Set up a Node.js environment"
+Assistant: { "response": "Here's a solid Node.js setup with version management.", "action": { "type": "add", "packageIds": ["nvm", "nodejs", "npm", "pnpm"] } }
+
+User: "I need cloud tools for AWS"
+Assistant: { "response": "Adding the AWS CLI for you.", "action": { "type": "add", "packageIds": ["aws-cli"] } }
+
+User: "Set up my shell nicely"
+Assistant: { "response": "Zsh + Oh My Zsh is the gold standard shell setup.", "action": { "type": "add", "packageIds": ["zsh", "oh-my-zsh"] } }
+
+User: "What do I need for Python data science?"
+Assistant: { "response": "Here's the full Python data science stack.", "action": { "type": "add", "packageIds": ["python3", "pyenv", "jupyter", "pandas", "numpy", "matplotlib", "tensorflow"] } }
 
 User: "Remove docker please"
 Assistant: { "response": "Removing Docker from your bucket.", "action": { "type": "remove", "packageIds": ["docker"] } }
 
 User: "Hi"
-Assistant: { "response": "Hello! I'm Root. What are you building today?" }
+Assistant: { "response": "Hello! I'm Root 🌳 What are you building today?" }
 
-Keep responses short and terminal-like. Use a friendly but professional tone.`,
+Keep responses short and terminal-like. Be opinionated and helpful.`,
     };
-
-    // Force JSON mode instruction for model
-    const startPrompt = messages.length > 0 ? messages[messages.length - 1].content : "";
-    const temperature = 0.5; // Lower temp for more consistent JSON
 
     const client = getGroqClient();
     const chatCompletion = await client.chat.completions.create({
@@ -92,17 +104,9 @@ Keep responses short and terminal-like. Use a friendly but professional tone.`,
     return NextResponse.json({ message: assistantMessage });
   } catch (error) {
     console.error('Error in chat API:', error);
-    
     if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    
-    return NextResponse.json(
-      { error: 'An unexpected error occurred' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }

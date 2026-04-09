@@ -228,7 +228,7 @@ export function ScriptOutput() {
                                         <span className="text-muted-foreground"> &lt;(</span>
                                         <span className="terminal-text">curl</span>
                                         <span className="text-muted-foreground"> -fsSL </span>
-                                        <span className="text-yellow-400/70 italic">"https://your-url.com/api/script-share?id=xxxxxxxx"</span>
+                                        <span className="text-yellow-400/70 italic">&quot;https://your-url.com/api/script-share?id=xxxxxxxx&quot;</span>
                                         <span className="text-muted-foreground">)</span>
                                     </div>
 
@@ -290,7 +290,7 @@ export function ScriptOutput() {
                                             <span className="text-muted-foreground"> &lt;(</span>
                                             <span className="terminal-text">curl</span>
                                             <span className="text-muted-foreground"> -fsSL </span>
-                                            <span className="text-yellow-400">"{curlUrl}"</span>
+                                            <span className="text-yellow-400">&quot;{curlUrl}&quot;</span>
                                             <span className="text-muted-foreground">)</span>
                                         </div>
                                     </div>

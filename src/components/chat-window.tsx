@@ -9,7 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export function ChatWindow() {
-    const { isChatOpen, toggleChat, addToBucket, removeFromBucket, bucket } = useStore();
+    const { isChatOpen, toggleChat, addToBucket, removeFromBucket, bucket, updatePackageVersion } = useStore();
     const [messages, setMessages] = useState<ChatMessage[]>([
         {
             role: 'assistant',
@@ -82,13 +82,18 @@ export function ChatWindow() {
 
             // Execute Actions
             if (action && action.packageIds) {
-                action.packageIds.forEach((id: string) => {
+                action.packageIds.forEach((idWithVersion: string) => {
+                    const [id, versionId] = idWithVersion.split(':');
                     const pkg = appCatalog.find((p) => p.id === id);
                     if (pkg) {
                         if (action.type === 'add') {
                             // Check if already in bucket
-                            if (!bucket.some(b => b.id === pkg.id)) {
-                                addToBucket({ ...pkg, selectedVersion: pkg.defaultVersion });
+                            const existing = bucket.find(b => b.id === pkg.id);
+                            if (!existing) {
+                                addToBucket({ ...pkg, selectedVersion: versionId || pkg.defaultVersion });
+                            } else if (versionId && existing.selectedVersion !== versionId) {
+                                // If already in bucket but different version requested, update it
+                                updatePackageVersion(pkg.id, versionId);
                             }
                         } else if (action.type === 'remove') {
                             removeFromBucket(pkg.id);

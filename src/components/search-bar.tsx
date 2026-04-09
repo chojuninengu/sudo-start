@@ -178,7 +178,7 @@ export function SearchBar({ onClose }: SearchBarProps) {
           {query.trim() && results.length === 0 && (
             <div className="px-5 py-10 text-center text-muted-foreground">
               <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="font-mono">No packages found for <span className="terminal-text">"{query}"</span></p>
+              <p className="font-mono">No packages found for <span className="terminal-text">&quot;{query}&quot;</span></p>
               <p className="text-sm mt-1">Try searching by category or tool name</p>
             </div>
           )}

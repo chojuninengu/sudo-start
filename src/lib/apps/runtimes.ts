@@ -2,6 +2,70 @@ import { Package } from '@/types';
 
 export const runtimeApps: Package[] = [
   {
+    id: 'ruby',
+    name: 'Ruby',
+    description: '💎 Dynamic, open-source programming language — Rails, Jekyll, CocoaPods',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install ruby && echo \'export PATH="/opt/homebrew/opt/ruby/bin:$PATH"\' >> ~/.zshrc',
+        linuxCommand: 'sudo apt-get install -y ruby-full',
+      },
+    ],
+  },
+  {
+    id: 'php',
+    name: 'PHP',
+    description: '🐘 Server-side scripting language — Laravel, WordPress, Symfony',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'brew install php',
+        linuxCommand: 'sudo apt-get install -y php php-cli php-mbstring php-xml php-curl php-zip',
+      },
+    ],
+  },
+  {
+    id: 'kotlin',
+    name: 'Kotlin',
+    description: '🎯 Modern, concise JVM language — Android, server-side, multiplatform',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable (via SDKMAN)',
+        macCommand: 'brew install kotlin',
+        linuxCommand: 'curl -s "https://get.sdkman.io" | bash && source "$HOME/.sdkman/bin/sdkman-init.sh" && sdk install kotlin',
+      },
+    ],
+  },
+  {
+    id: 'nvm',
+    name: 'NVM',
+    description: '🔀 Node Version Manager — easily switch between Node.js versions',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable',
+        macCommand: 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh" && nvm install --lts',
+        linuxCommand: 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash && export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \\. "$NVM_DIR/nvm.sh" && nvm install --lts',
+      },
+    ],
+  },
+  {
     id: 'nodejs',
     name: 'Node.js',
     description: '⚙️ JavaScript runtime built on Chrome V8 engine',
@@ -24,6 +88,28 @@ export const runtimeApps: Package[] = [
     ],
     linuxCommandTemplate: 'curl -fsSL https://deb.nodesource.com/setup_${VERSION_MAJOR}.x | sudo -E bash - && sudo apt-get install -y nodejs',
     macosCommandTemplate: 'brew install node@${VERSION_MAJOR}',
+  },
+  {
+    id: 'npm',
+    name: 'npm',
+    description: '📦 Node Package Manager — the world\'s largest software registry',
+    category: 'runtime',
+    platforms: { macos: true, linux: true },
+    defaultVersion: 'stable',
+    versions: [
+      {
+        id: 'stable',
+        label: 'Stable (via Node.js)',
+        macCommand: 'brew install node && npm install -g npm@latest',
+        linuxCommand: 'curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs && sudo npm install -g npm@latest',
+      },
+      {
+        id: 'standalone',
+        label: 'Update existing npm',
+        macCommand: 'npm install -g npm@latest',
+        linuxCommand: 'sudo npm install -g npm@latest',
+      },
+    ],
   },
   {
     id: 'cpp',
