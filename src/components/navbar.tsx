@@ -1,16 +1,20 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { MessageSquare, ShoppingCart, Terminal } from 'lucide-react';
+import { MessageSquare, ShoppingCart, Terminal, Search } from 'lucide-react';
 import { useState } from 'react';
 import { BucketModal } from './bucket-modal';
+import { SearchBar } from './search-bar';
 
 export function Navbar() {
     const { os, bucket, toggleChat } = useStore();
     const [isBucketOpen, setIsBucketOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     return (
         <>
+            {isSearchOpen && <SearchBar onClose={() => setIsSearchOpen(false)} />}
+
             <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between gap-4">
@@ -25,8 +29,30 @@ export function Navbar() {
                             </div>
                         </div>
 
+                        {/* Search Bar (desktop) */}
+                        <button
+                            onClick={() => setIsSearchOpen(true)}
+                            className="hidden md:flex flex-1 max-w-sm items-center gap-3 px-4 py-2 rounded-lg
+                                bg-muted border border-border hover:border-primary/50 transition-all
+                                text-muted-foreground text-sm font-mono"
+                        >
+                            <Search className="w-4 h-4 shrink-0" />
+                            <span>Search packages...</span>
+                            <kbd className="ml-auto px-1.5 py-0.5 text-xs rounded border border-border">⌘K</kbd>
+                        </button>
+
                         {/* Right Actions */}
                         <div className="flex items-center gap-3">
+                            {/* Search icon (mobile) */}
+                            <button
+                                onClick={() => setIsSearchOpen(true)}
+                                className="md:hidden flex items-center gap-2 px-3 py-2 rounded-lg border border-border
+                                    hover:border-primary/50 transition-all"
+                                title="Search packages"
+                            >
+                                <Search className="w-5 h-5" />
+                            </button>
+
                             {/* Bucket Button */}
                             <div className="relative">
                                 <button
@@ -45,7 +71,6 @@ export function Navbar() {
                                     )}
                                 </button>
 
-                                {/* Bucket Modal */}
                                 {isBucketOpen && (
                                     <BucketModal onClose={() => setIsBucketOpen(false)} />
                                 )}

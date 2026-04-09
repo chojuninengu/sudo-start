@@ -47,7 +47,7 @@ export function generateScript(
   } else if (os === 'linux') {
     lines.push('echo "Updating package lists..."');
     lines.push('sudo apt-get update -y');
-    lines.push('sudo apt-get upgrade -y');
+    // lines.push('sudo apt-get upgrade -y');
     lines.push('');
 
     // Install flatpak if needed
