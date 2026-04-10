@@ -120,7 +120,7 @@ export function SearchBar({ onClose }: SearchBarProps) {
             className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground text-lg focus:outline-none font-mono"
           />
           <div className="flex items-center gap-2">
-            <kbd className="hidden sm:inline-flex px-2 py-1 text-xs rounded border border-border text-muted-foreground font-mono">ESC</kbd>
+            <kbd className="hidden sm:inline-flex py-1 text-xs rounded border border-border text-muted-foreground font-mono">ESC</kbd>
             <button
               onClick={onClose}
               className="p-1 hover:bg-accent rounded transition-colors"
