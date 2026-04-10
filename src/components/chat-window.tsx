@@ -159,7 +159,7 @@ export function ChatWindow() {
   return (
     <div
       className={`fixed bottom-6 right-6 w-96 terminal-card rounded-lg overflow-hidden shadow-2xl z-50 transition-all flex flex-col ${
-        isMinimized ? 'h-14' : 'h-[600px]'
+        isMinimized ? 'h-14' : 'h-150'
       }`}
     >
       {/* Header */}
@@ -177,7 +177,7 @@ export function ChatWindow() {
           <button onClick={() => setIsMinimized(!isMinimized)} className="p-1 hover:bg-accent rounded transition-colors">
             {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
           </button>
-          <button onClick={toggleChat} className="p-1 hover:bg-accent rounded transition-colors">
+          <button type="button" onClick={toggleChat} title="Close chat" aria-label="Close chat" className="p-1 hover:bg-accent rounded transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -259,7 +259,7 @@ export function ChatWindow() {
                   placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none overflow-y-auto font-mono text-sm"
                 disabled={isLoading}
               />
-              <button
+              <button type="submit" title="Send message" aria-label="Send message"
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90

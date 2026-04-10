@@ -7,6 +7,7 @@ import { Plus, Check, ChevronDown, AlertCircle, Wand2, Copy, Clock, HardDrive } 
 import { useState, useMemo, useEffect } from 'react';
 import { Navbar } from './navbar';
 import { DependencyPanel } from './dependency-panel';
+import { VersionNote } from './version-note';
 import { estimateInstallTime, estimateDiskSpace } from '@/lib/script-generator';
 
 const categoryIcons: Record<string, string> = {
@@ -19,7 +20,7 @@ const categoryIcons: Record<string, string> = {
 };
 
 export function PackageManager() {
-  const { os, bucket, addToBucket, updatePackageVersion, addDefaultAppsToBucket } = useStore();
+  const { os, bucket, addToBucket, updatePackageVersion, updatePackageNote, addDefaultAppsToBucket } = useStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const availableApps = useMemo(() => {
@@ -33,6 +34,7 @@ export function PackageManager() {
       : availableApps.filter((p) => p.category === selectedCategory);
 
   const isInBucket = (pkg: Package) => bucket.some((p) => p.id === pkg.id);
+  const getBucketPkg = (pkg: Package) => bucket.find((p) => p.id === pkg.id);
 
   const handleAddToBucket = (pkg: Package, versionId: string) => {
     if (isInBucket(pkg)) {
@@ -111,15 +113,20 @@ export function PackageManager() {
 
         {/* Package Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPackages.map((pkg) => (
-            <PackageCard
-              key={pkg.id}
-              pkg={pkg}
-              os={os}
-              isInBucket={isInBucket(pkg)}
-              onAddToBucket={handleAddToBucket}
-            />
-          ))}
+          {filteredPackages.map((pkg) => {
+            const bucketPkg = getBucketPkg(pkg);
+            return (
+              <PackageCard
+                key={pkg.id}
+                pkg={pkg}
+                os={os}
+                isInBucket={isInBucket(pkg)}
+                bucketNote={bucketPkg?.versionNote || ''}
+                onAddToBucket={handleAddToBucket}
+                onUpdateNote={updatePackageNote}
+              />
+            );
+          })}
         </div>
 
         {filteredPackages.length === 0 && (
@@ -136,12 +143,16 @@ function PackageCard({
   pkg,
   os,
   isInBucket,
+  bucketNote,
   onAddToBucket,
+  onUpdateNote,
 }: {
   pkg: Package;
   os: 'macos' | 'linux' | null;
   isInBucket: boolean;
+  bucketNote: string;
   onAddToBucket: (pkg: Package, versionId: string) => void;
+  onUpdateNote: (pkgId: string, note: string) => void;
 }) {
   const [selectedVersion, setSelectedVersion] = useState(pkg.defaultVersion);
   const [dynamicVersions, setDynamicVersions] = useState<string[]>([]);
@@ -187,7 +198,6 @@ function PackageCard({
       ? dynamicVersions.map((v) => ({ id: v, label: v }))
       : pkg.versions.map((v) => ({ id: v.id, label: v.label }));
 
-  // Build the preview install command for the copy button
   const getPreviewCommand = () => {
     if (!os) return '';
     const versionEntry = pkg.versions.find((v) => v.id === selectedVersion);
@@ -239,6 +249,18 @@ function PackageCard({
               {categoryIcons[pkg.category] || '📁'} {pkg.category.replace('-', ' ')}
             </span>
           </div>
+
+          {/* Version note button — only shown when package is in bucket */}
+          {isInBucket && (
+            <VersionNote
+              pkgId={pkg.id}
+              pkgName={pkg.name}
+              version={selectedVersion}
+              note={bucketNote}
+              onSave={onUpdateNote}
+              variant="compact"
+            />
+          )}
         </div>
 
         {/* Version selector */}
@@ -252,6 +274,8 @@ function PackageCard({
             </label>
             <div className="relative">
               <select
+                title={`Select version for ${pkg.name}`}
+                aria-label={`Select version for ${pkg.name}`}
                 value={selectedVersion}
                 onChange={(e) => {
                   const v = e.target.value;
@@ -268,6 +292,13 @@ function PackageCard({
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-60" />
             </div>
+          </div>
+        )}
+
+        {/* Show pinned note inline on card if present */}
+        {isInBucket && bucketNote && (
+          <div className="mt-3 version-note-badge" title={bucketNote}>
+            📌 {bucketNote}
           </div>
         )}
       </div>

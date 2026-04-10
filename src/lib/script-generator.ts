@@ -3,19 +3,12 @@ import { requiresFlatpak } from './apps';
 
 /**
  * Resolves the exact install command for a package+version combo.
- * Priority:
- *  1. If a template exists AND version is not generic → interpolate template
- *  2. Otherwise use the exact version entry's command
- *  3. Fall back to the default version entry's command
  */
 function resolveCommand(pkg: Package, os: 'macos' | 'linux'): string {
   const versionId = pkg.selectedVersion || pkg.defaultVersion;
   const template = os === 'macos' ? pkg.macosCommandTemplate : pkg.linuxCommandTemplate;
 
-  // Exact version entry first
   const exactEntry = pkg.versions.find((v) => v.id === versionId);
-
-  // If we have a template AND a real semver-style version (not 'stable'/'latest'/named IDs)
   const isGeneric = ['stable', 'latest', 'fnm', 'deb', 'appimage', 'community', 'ultimate', 'brew', 'standalone'].includes(versionId);
 
   if (template && !isGeneric) {
@@ -32,7 +25,6 @@ function resolveCommand(pkg: Package, os: 'macos' | 'linux'): string {
     return os === 'macos' ? exactEntry.macCommand : exactEntry.linuxCommand;
   }
 
-  // Last resort: default version entry
   const defaultEntry =
     pkg.versions.find((v) => v.id === pkg.defaultVersion) ?? pkg.versions[0];
   return os === 'macos'
@@ -59,6 +51,20 @@ export function generateScript(
   lines.push(`# OS: ${os.toUpperCase()}  |  Shell: ${shell}  |  Packages: ${packages.length}`);
   lines.push(`# Generated: ${new Date().toISOString().split('T')[0]}`);
   lines.push('');
+
+  // Emit version pin notes summary if any packages have notes
+  const annotatedPkgs = packages.filter((p) => p.versionNote?.trim());
+  if (annotatedPkgs.length > 0) {
+    lines.push('# ── Version Pin Notes ─────────────────────────────────');
+    annotatedPkgs.forEach((pkg) => {
+      const v = pkg.selectedVersion || pkg.defaultVersion;
+      const isGeneric = ['stable', 'latest'].includes(v);
+      const vLabel = isGeneric ? 'stable' : v.startsWith('v') ? v : `v${v}`;
+      lines.push(`# ${pkg.name} @ ${vLabel}: ${pkg.versionNote}`);
+    });
+    lines.push('');
+  }
+
   lines.push('set -e  # Exit immediately on error');
   lines.push('set -u  # Treat unset variables as errors');
   lines.push('');
@@ -86,7 +92,6 @@ export function generateScript(
 
   const needsFlatpak = os === 'linux' && packages.some((pkg) => requiresFlatpak(pkg));
 
-  // ── Bootstrap package manager ──────────────────────────
   if (os === 'macos') {
     lines.push('# ── Bootstrap: Homebrew ───────────────────────────────');
     lines.push('if ! command -v brew &>/dev/null; then');
@@ -120,7 +125,6 @@ export function generateScript(
     }
   }
 
-  // ── Install packages ───────────────────────────────────
   if (packages.length > 0) {
     lines.push('log "Starting package installation..."');
     lines.push('echo ""');
@@ -132,6 +136,12 @@ export function generateScript(
       const versionLabel = isGeneric ? '' : ` @ ${versionId}`;
 
       lines.push(`# ── [${idx + 1}/${packages.length}] ${pkg.name}${versionLabel} ${'─'.repeat(Math.max(0, 44 - pkg.name.length - versionLabel.length))}`);
+
+      // Emit pin note as inline comment if present
+      if (pkg.versionNote?.trim()) {
+        lines.push(`# 📌 Pin note: ${pkg.versionNote.trim()}`);
+      }
+
       lines.push(`log "Installing ${pkg.name}${versionLabel}..."`);
 
       const installCmd = resolveCommand(pkg, os);
@@ -144,7 +154,6 @@ export function generateScript(
           lines.push(`if command -v ${checkCmd} &>/dev/null; then`);
           lines.push(`  ok "${pkg.name} already installed — skipping"`);
           lines.push('else');
-          // Indent the install command
           installCmd.split('\n').forEach((line) => {
             lines.push(`  ${line}`);
           });
@@ -160,7 +169,6 @@ export function generateScript(
     });
   }
 
-  // ── Footer ─────────────────────────────────────────────
   lines.push('echo ""');
   lines.push('echo -e "${GREEN}╔══════════════════════════════════════════════════╗${RESET}"');
   lines.push('echo -e "${GREEN}║      ✓  Setup complete. Happy coding! 🚀         ║${RESET}"');
@@ -193,12 +201,18 @@ export function generateBrewfile(packages: Package[]): string {
 
     if (cmd.includes('brew install --cask')) {
       const name = cmd.replace(/brew install --cask\s+/, '').trim();
+      if (pkg.versionNote?.trim()) {
+        casks.push(`# 📌 ${pkg.versionNote}`);
+      }
       casks.push(`cask "${name}"`);
     } else if (cmd.includes('brew tap')) {
       const tap = cmd.replace(/brew tap\s+/, '').trim();
       taps.push(`tap "${tap}"`);
     } else if (cmd.includes('brew install')) {
       const name = cmd.replace(/brew install\s+/, '').trim();
+      if (pkg.versionNote?.trim()) {
+        brews.push(`# 📌 ${pkg.versionNote}`);
+      }
       brews.push(`brew "${name}"`);
     }
   });
@@ -225,25 +239,10 @@ export function generateBrewfile(packages: Package[]): string {
 /** Estimate install time in minutes */
 export function estimateInstallTime(packages: Package[]): number {
   const weights: Record<string, number> = {
-    ide: 3,
-    browser: 2,
-    runtime: 4,
-    container: 5,
-    database: 4,
-    'data-science': 6,
-    mobile: 8,
-    'game-dev': 10,
-    'desktop-dev': 5,
-    framework: 2,
-    tool: 1,
-    utility: 1,
-    terminal: 2,
-    'package-manager': 1,
-    'build-tool': 2,
-    cloud: 2,
-    devops: 3,
-    communication: 2,
-    productivity: 2,
+    ide: 3, browser: 2, runtime: 4, container: 5, database: 4,
+    'data-science': 6, mobile: 8, 'game-dev': 10, 'desktop-dev': 5,
+    framework: 2, tool: 1, utility: 1, terminal: 2, 'package-manager': 1,
+    'build-tool': 2, cloud: 2, devops: 3, communication: 2, productivity: 2,
     'web-server': 2,
   };
   const total = packages.reduce((sum, p) => sum + (weights[p.category] ?? 2), 0);
@@ -253,26 +252,11 @@ export function estimateInstallTime(packages: Package[]): number {
 /** Rough disk-space estimate in MB */
 export function estimateDiskSpace(packages: Package[]): number {
   const weights: Record<string, number> = {
-    ide: 400,
-    browser: 300,
-    runtime: 200,
-    container: 500,
-    database: 300,
-    'data-science': 800,
-    mobile: 1500,
-    'game-dev': 2000,
-    'desktop-dev': 400,
-    framework: 100,
-    tool: 30,
-    utility: 20,
-    terminal: 80,
-    'package-manager': 50,
-    'build-tool': 100,
-    cloud: 80,
-    devops: 150,
-    communication: 200,
-    productivity: 150,
-    'web-server': 80,
+    ide: 400, browser: 300, runtime: 200, container: 500, database: 300,
+    'data-science': 800, mobile: 1500, 'game-dev': 2000, 'desktop-dev': 400,
+    framework: 100, tool: 30, utility: 20, terminal: 80, 'package-manager': 50,
+    'build-tool': 100, cloud: 80, devops: 150, communication: 200,
+    productivity: 150, 'web-server': 80,
   };
   return packages.reduce((sum, p) => sum + (weights[p.category] ?? 100), 0);
 }

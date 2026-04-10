@@ -10,7 +10,7 @@ import {
 } from '@/lib/script-generator';
 import {
   Download, Copy, Check, ChevronLeft, Link2, Terminal,
-  RefreshCw, Clock, HardDrive, Package, FileText,
+  RefreshCw, Clock, HardDrive, Package, FileText, StickyNote,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -28,6 +28,7 @@ export function ScriptOutput() {
   const [curlUrl, setCurlUrl] = useState<string | null>(null);
   const [curlLoading, setCurlLoading] = useState(false);
   const [curlError, setCurlError] = useState<string | null>(null);
+  const [showAllNotes, setShowAllNotes] = useState(false);
 
   useEffect(() => {
     setScript(generateScript(os, shell, bucket));
@@ -37,6 +38,8 @@ export function ScriptOutput() {
   const estTime = estimateInstallTime(bucket);
   const estDisk = estimateDiskSpace(bucket);
   const diskLabel = estDisk >= 1000 ? `${(estDisk / 1000).toFixed(1)} GB` : `${estDisk} MB`;
+
+  const pinnedPackages = bucket.filter((p) => p.versionNote?.trim());
 
   const handleCopy = async (text: string) => {
     await navigator.clipboard.writeText(text);
@@ -127,13 +130,54 @@ export function ScriptOutput() {
             {bucket.map((pkg) => {
               const v = pkg.selectedVersion || pkg.defaultVersion;
               const isGeneric = ['stable', 'latest', 'fnm', 'deb', 'appimage'].includes(v);
+              const hasNote = pkg.versionNote?.trim();
               return (
-                <span key={pkg.id} className="px-2 py-1 rounded-lg bg-primary/15 text-primary text-xs font-mono">
+                <span
+                  key={pkg.id}
+                  className={`px-2 py-1 rounded-lg text-xs font-mono flex items-center gap-1 ${
+                    hasNote
+                      ? 'bg-primary/20 text-primary border border-primary/30'
+                      : 'bg-primary/15 text-primary'
+                  }`}
+                  title={hasNote ? `📌 ${pkg.versionNote}` : undefined}
+                >
+                  {hasNote && <StickyNote className="w-2.5 h-2.5 text-yellow-500" />}
                   {pkg.name}{!isGeneric ? ` ${v.startsWith('v') ? v : 'v' + v}` : ''}
                 </span>
               );
             })}
           </div>
+
+          {/* Version pin notes summary */}
+          {pinnedPackages.length > 0 && (
+            <div className="mt-4 rounded-lg border p-3 space-y-2"
+              style={{ background: 'var(--note-bg)', borderColor: 'var(--note-border)' }}>
+              <button
+                onClick={() => setShowAllNotes(!showAllNotes)}
+                className="flex items-center gap-2 text-xs font-medium w-full text-left"
+                style={{ color: 'var(--note-text)' }}
+              >
+                <StickyNote className="w-3.5 h-3.5 text-yellow-500" />
+                <span>{pinnedPackages.length} pinned version{pinnedPackages.length > 1 ? 's' : ''} with notes</span>
+                <span className="ml-auto opacity-60">{showAllNotes ? '▲ hide' : '▼ show'}</span>
+              </button>
+              {showAllNotes && (
+                <ul className="space-y-1.5 pt-1 border-t" style={{ borderColor: 'var(--note-border)' }}>
+                  {pinnedPackages.map((pkg) => {
+                    const v = pkg.selectedVersion || pkg.defaultVersion;
+                    const isGeneric = ['stable', 'latest'].includes(v);
+                    const vLabel = isGeneric ? 'stable' : v.startsWith('v') ? v : `v${v}`;
+                    return (
+                      <li key={pkg.id} className="flex gap-2 text-xs" style={{ color: 'var(--note-text)' }}>
+                        <span className="font-mono font-medium shrink-0">{pkg.name} @ {vLabel}</span>
+                        <span className="opacity-70 truncate">— {pkg.versionNote}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -250,7 +294,7 @@ export function ScriptOutput() {
             {!curlUrl ? (
               <div className="space-y-4">
                 <div className="p-4 rounded-lg bg-muted/50 border border-border font-mono text-sm text-muted-foreground">
-                  $ bash &lt;(curl -fsSL <span className="italic">"https://…/api/script-share?id=xxxxxxxx"</span>)
+                  $ bash &lt;(curl -fsSL <span className="italic">&quot;https://…/api/script-share?id=xxxxxxxx&quot;</span>)
                 </div>
                 <div className="p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 text-xs text-yellow-300/80 space-y-1">
                   <p className="font-bold text-yellow-400">⚠️ Security reminder</p>
@@ -284,7 +328,7 @@ export function ScriptOutput() {
                     <span className="text-muted-foreground"> &lt;(</span>
                     <span className="terminal-text">curl</span>
                     <span className="text-muted-foreground"> -fsSL </span>
-                    <span className="text-yellow-400">"{curlUrl}"</span>
+                    <span className="text-yellow-400">&quot;{curlUrl}&quot;</span>
                     <span className="text-muted-foreground">)</span>
                   </div>
                 </div>
@@ -300,7 +344,6 @@ export function ScriptOutput() {
                   </button>
                 </div>
 
-                {/* Alternatives */}
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground font-mono">Alternative commands:</p>
                   {[
@@ -312,9 +355,10 @@ export function ScriptOutput() {
                       <code className="flex-1 text-xs font-mono text-muted-foreground group-hover:text-foreground transition-colors break-all">
                         {cmd}
                       </code>
-                      <button onClick={() => navigator.clipboard.writeText(cmd)}
+                      <button type="button" onClick={() => navigator.clipboard.writeText(cmd)} title="Copy command"
                         className="shrink-0 p-1.5 rounded hover:bg-accent transition-colors">
                         <Copy className="w-3 h-3" />
+                        <span className="sr-only">Copy {label} command</span>
                       </button>
                     </div>
                   ))}

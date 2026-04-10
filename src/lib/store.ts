@@ -34,6 +34,13 @@ export const useStore = create<AppState>((set, get) => ({
       ),
     })),
 
+  updatePackageNote: (pkgId, note) =>
+    set((state) => ({
+      bucket: state.bucket.map((p) =>
+        p.id === pkgId ? { ...p, versionNote: note } : p
+      ),
+    })),
+
   addDefaultAppsToBucket: () =>
     set((state) => {
       const defaultApps = getDefaultApps();
@@ -62,7 +69,11 @@ export const useStore = create<AppState>((set, get) => ({
 
   exportBucket: () => {
     const { bucket } = get();
-    const data = bucket.map((p) => ({ id: p.id, selectedVersion: p.selectedVersion || p.defaultVersion }));
+    const data = bucket.map((p) => ({
+      id: p.id,
+      selectedVersion: p.selectedVersion || p.defaultVersion,
+      versionNote: p.versionNote || '',
+    }));
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -74,12 +85,16 @@ export const useStore = create<AppState>((set, get) => ({
 
   importBucket: (json: string) => {
     try {
-      const data = JSON.parse(json) as { id: string; selectedVersion?: string }[];
+      const data = JSON.parse(json) as { id: string; selectedVersion?: string; versionNote?: string }[];
       const newBucket: Package[] = [];
-      data.forEach(({ id, selectedVersion }) => {
+      data.forEach(({ id, selectedVersion, versionNote }) => {
         const pkg = appCatalog.find((p) => p.id === id);
         if (pkg) {
-          newBucket.push({ ...pkg, selectedVersion: selectedVersion || pkg.defaultVersion });
+          newBucket.push({
+            ...pkg,
+            selectedVersion: selectedVersion || pkg.defaultVersion,
+            versionNote: versionNote || '',
+          });
         }
       });
       set({ bucket: newBucket });

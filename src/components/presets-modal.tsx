@@ -36,7 +36,7 @@ export function PresetsModal({ onClose }: PresetsModalProps) {
               <h2 className="text-xl font-bold terminal-text">Starter Presets</h2>
               <p className="text-sm text-muted-foreground mt-0.5">One-click environment configurations</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-accent rounded-lg transition-colors">
+            <button type="button" title="Close" aria-label="Close" onClick={onClose} className="p-2 hover:bg-accent rounded-lg transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -62,6 +62,7 @@ export function PresetsModal({ onClose }: PresetsModalProps) {
 
                 return (
                   <button
+                    type="button"
                     key={preset.id}
                     onClick={() => handleApply(preset.id, preset.packageIds)}
                     disabled={isApplied}

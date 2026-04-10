@@ -1,7 +1,8 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { MessageSquare, ShoppingCart, Terminal, Search, Layers, Upload, Download as DownloadIcon } from 'lucide-react';
+import { useTheme } from '@/lib/theme-context';
+import { MessageSquare, ShoppingCart, Terminal, Search, Layers, Upload, Download as DownloadIcon, Sun, Moon } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { BucketModal } from './bucket-modal';
 import { SearchBar } from './search-bar';
@@ -9,6 +10,7 @@ import { PresetsModal } from './presets-modal';
 
 export function Navbar() {
   const { os, bucket, toggleChat, exportBucket, importBucket } = useStore();
+  const { theme, toggleTheme } = useTheme();
   const [isBucketOpen, setIsBucketOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isPresetsOpen, setIsPresetsOpen] = useState(false);
@@ -27,7 +29,6 @@ export function Navbar() {
       }
     };
     reader.readAsText(file);
-    // Reset input so same file can be re-imported
     e.target.value = '';
   };
 
@@ -57,6 +58,8 @@ export function Navbar() {
         accept=".json"
         className="hidden"
         onChange={handleImport}
+        title="Import presets file"
+        aria-label="Import presets file"
       />
 
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -75,11 +78,12 @@ export function Navbar() {
 
             {/* Search Bar (desktop) */}
             <button
+              type="button"
               onClick={() => setIsSearchOpen(true)}
-              className="hidden md:flex flex-1 max-w-sm items-center gap-3 px-4 py-2 rounded-lg
-                bg-muted border border-border hover:border-primary/50 transition-all
-                text-muted-foreground text-sm font-mono"
+              className="hidden md:flex flex-4 max-w-sm items-center gap-3 px-6 py-2 rounded-lg bg-muted border border-border hover:border-primary/50 transition-all text-muted-foreground text-sm font-mono"
             >
+
+              
               <Search className="w-4 h-4 shrink-0" />
               <span>Search packages...</span>
               <kbd className="ml-auto px-1.5 py-0.5 text-xs rounded border border-border">⌘K</kbd>
@@ -92,6 +96,9 @@ export function Navbar() {
             <div className="flex items-center gap-2">
               {/* Search (mobile) */}
               <button
+                type="button"
+                title="Search packages"
+                aria-label="Search packages"
                 onClick={() => setIsSearchOpen(true)}
                 className="md:hidden p-2 rounded-lg border border-border hover:border-primary/50 transition-all"
               >
@@ -100,6 +107,7 @@ export function Navbar() {
 
               {/* Presets */}
               <button
+                type="button"
                 onClick={() => setIsPresetsOpen(true)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border
                   hover:border-primary/50 transition-all text-sm"
@@ -111,6 +119,7 @@ export function Navbar() {
 
               {/* Import */}
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border transition-all text-sm ${
                   importError
@@ -125,6 +134,7 @@ export function Navbar() {
 
               {/* Export */}
               <button
+                type="button"
                 onClick={exportBucket}
                 disabled={bucket.length === 0}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border
@@ -135,9 +145,29 @@ export function Navbar() {
                 <span className="hidden lg:inline">Export</span>
               </button>
 
+              {/* Theme Toggle */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border
+                  hover:border-primary/50 transition-all text-sm"
+                title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+                aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-yellow-400" />
+                ) : (
+                  <Moon className="w-4 h-4 terminal-text" />
+                )}
+                <span className="hidden lg:inline text-muted-foreground">
+                  {theme === 'dark' ? 'Light' : 'Dark'}
+                </span>
+              </button>
+
               {/* Bucket */}
               <div className="relative">
                 <button
+                  type="button"
                   onClick={() => setIsBucketOpen(!isBucketOpen)}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-border
                     hover:border-primary/50 transition-all terminal-card"
@@ -156,6 +186,7 @@ export function Navbar() {
 
               {/* AI Chat */}
               <button
+                type="button"
                 onClick={toggleChat}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-primary
                   terminal-text hover:terminal-glow transition-all text-sm"

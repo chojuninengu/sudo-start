@@ -28,6 +28,8 @@ export interface Package {
   defaultVersion: string;
   versions: AppVersion[];
   selectedVersion?: string;
+  /** Optional note explaining why this version was pinned */
+  versionNote?: string;
   macosInstallCmd?: string;
   linuxInstallCmd?: string;
   linuxCommandTemplate?: string;
@@ -47,6 +49,7 @@ export interface AppState {
   addToBucket: (pkg: Package) => void;
   removeFromBucket: (pkgId: string) => void;
   updatePackageVersion: (pkgId: string, version: string) => void;
+  updatePackageNote: (pkgId: string, note: string) => void;
   addDefaultAppsToBucket: () => void;
   loadPreset: (packageIds: string[]) => void;
   exportBucket: () => void;
