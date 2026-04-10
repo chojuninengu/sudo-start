@@ -1,6 +1,45 @@
 import { OS, Shell, Package } from '@/types';
 import { requiresFlatpak } from './apps';
 
+/**
+ * Resolves the exact install command for a package+version combo.
+ * Priority:
+ *  1. If a template exists AND version is not generic → interpolate template
+ *  2. Otherwise use the exact version entry's command
+ *  3. Fall back to the default version entry's command
+ */
+function resolveCommand(pkg: Package, os: 'macos' | 'linux'): string {
+  const versionId = pkg.selectedVersion || pkg.defaultVersion;
+  const template = os === 'macos' ? pkg.macosCommandTemplate : pkg.linuxCommandTemplate;
+
+  // Exact version entry first
+  const exactEntry = pkg.versions.find((v) => v.id === versionId);
+
+  // If we have a template AND a real semver-style version (not 'stable'/'latest'/named IDs)
+  const isGeneric = ['stable', 'latest', 'fnm', 'deb', 'appimage', 'community', 'ultimate', 'brew', 'standalone'].includes(versionId);
+
+  if (template && !isGeneric) {
+    const v = versionId.startsWith('v') ? versionId : `v${versionId}`;
+    const v_no_v = versionId.startsWith('v') ? versionId.slice(1) : versionId;
+    const v_major = v_no_v.split('.')[0];
+    return template
+      .replaceAll('${VERSION}', v)
+      .replaceAll('${VERSION_NO_V}', v_no_v)
+      .replaceAll('${VERSION_MAJOR}', v_major);
+  }
+
+  if (exactEntry) {
+    return os === 'macos' ? exactEntry.macCommand : exactEntry.linuxCommand;
+  }
+
+  // Last resort: default version entry
+  const defaultEntry =
+    pkg.versions.find((v) => v.id === pkg.defaultVersion) ?? pkg.versions[0];
+  return os === 'macos'
+    ? (defaultEntry?.macCommand ?? '')
+    : (defaultEntry?.linuxCommand ?? '');
+}
+
 export function generateScript(
   os: OS | null,
   shell: Shell | null,
@@ -14,229 +53,263 @@ export function generateScript(
 
   lines.push('#!/bin/bash');
   lines.push('');
-  lines.push('# SudoStart - Zero-to-Code OS Setup Script');
-  lines.push(`# Generated for: ${os.toUpperCase()} (${shell})`);
-  lines.push(`# Date: ${new Date().toISOString().split('T')[0]}`);
+  lines.push('# ╔══════════════════════════════════════════════════╗');
+  lines.push('# ║     SudoStart — Zero-to-Code Setup Script        ║');
+  lines.push('# ╚══════════════════════════════════════════════════╝');
+  lines.push(`# OS: ${os.toUpperCase()}  |  Shell: ${shell}  |  Packages: ${packages.length}`);
+  lines.push(`# Generated: ${new Date().toISOString().split('T')[0]}`);
   lines.push('');
-  lines.push('set -e  # Exit on error');
+  lines.push('set -e  # Exit immediately on error');
+  lines.push('set -u  # Treat unset variables as errors');
   lines.push('');
-  lines.push('echo "================================================"');
-  lines.push('echo "  SudoStart - System Setup Initialization"');
-  lines.push('echo "================================================"');
+
+  // Colour helpers
+  lines.push('# ── Colour helpers ────────────────────────────────────');
+  lines.push('RED="\\033[0;31m"');
+  lines.push('GREEN="\\033[0;32m"');
+  lines.push('YELLOW="\\033[1;33m"');
+  lines.push('CYAN="\\033[0;36m"');
+  lines.push('RESET="\\033[0m"');
+  lines.push('');
+  lines.push('log()  { echo -e "${CYAN}[SudoStart]${RESET} $*"; }');
+  lines.push('ok()   { echo -e "${GREEN}  ✓${RESET} $*"; }');
+  lines.push('warn() { echo -e "${YELLOW}  ⚠${RESET} $*"; }');
+  lines.push('err()  { echo -e "${RED}  ✗${RESET} $*" >&2; }');
+  lines.push('');
+
+  lines.push('echo ""');
+  lines.push('echo -e "${CYAN}╔══════════════════════════════════════════════════╗${RESET}"');
+  lines.push('echo -e "${CYAN}║     SudoStart — System Setup Initialization      ║${RESET}"');
+  lines.push('echo -e "${CYAN}╚══════════════════════════════════════════════════╝${RESET}"');
   lines.push('echo ""');
   lines.push('');
 
-  const needsFlatpak = os === 'linux' && packages.some(pkg => requiresFlatpak(pkg));
+  const needsFlatpak = os === 'linux' && packages.some((pkg) => requiresFlatpak(pkg));
 
+  // ── Bootstrap package manager ──────────────────────────
   if (os === 'macos') {
-    lines.push('# Check if Homebrew is installed');
-    lines.push('if ! command -v brew &> /dev/null; then');
-    lines.push('    echo "Installing Homebrew..."');
-    lines.push('    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"');
+    lines.push('# ── Bootstrap: Homebrew ───────────────────────────────');
+    lines.push('if ! command -v brew &>/dev/null; then');
+    lines.push('  log "Installing Homebrew..."');
+    lines.push('  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"');
+    lines.push('  ok "Homebrew installed"');
     lines.push('else');
-    lines.push('    echo "Homebrew already installed. Updating..."');
-    lines.push('    brew update');
+    lines.push('  log "Homebrew found — updating..."');
+    lines.push('  brew update --quiet');
+    lines.push('  ok "Homebrew up to date"');
     lines.push('fi');
-  } else if (os === 'linux') {
-    lines.push('echo "Updating package lists..."');
-    lines.push('sudo apt-get update');
+    lines.push('');
+  } else {
+    lines.push('# ── Bootstrap: apt ────────────────────────────────────');
+    lines.push('log "Updating package lists..."');
+    lines.push('sudo apt-get update -qq');
+    lines.push('ok "Package lists updated"');
     lines.push('');
 
     if (needsFlatpak) {
-      lines.push('# Install Flatpak (required for some packages)');
-      lines.push('if ! command -v flatpak &> /dev/null; then');
-      lines.push('    echo "Installing Flatpak..."');
-      lines.push('    sudo apt-get install -y flatpak');
-      lines.push('    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo');
-      lines.push('    echo "Note: You may need to restart your system for Flatpak to work properly"');
+      lines.push('# ── Bootstrap: Flatpak ────────────────────────────────');
+      lines.push('if ! command -v flatpak &>/dev/null; then');
+      lines.push('  log "Installing Flatpak..."');
+      lines.push('  sudo apt-get install -y flatpak');
+      lines.push('  sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo');
+      lines.push('  warn "A system restart may be required for Flatpak apps to appear"');
       lines.push('else');
-      lines.push('    echo "Flatpak already installed"');
+      lines.push('  ok "Flatpak already installed"');
       lines.push('fi');
       lines.push('');
     }
   }
 
-  lines.push('');
-
+  // ── Install packages ───────────────────────────────────
   if (packages.length > 0) {
-    lines.push('echo ""');
-    lines.push('echo "Installing packages..."');
+    lines.push('log "Starting package installation..."');
     lines.push('echo ""');
     lines.push('');
 
-    packages.forEach((pkg) => {
+    packages.forEach((pkg, idx) => {
       const versionId = pkg.selectedVersion || pkg.defaultVersion;
-      let version = pkg.versions.find(v => v.id === versionId);
+      const isGeneric = ['stable', 'latest'].includes(versionId);
+      const versionLabel = isGeneric ? '' : ` @ ${versionId}`;
 
-      if (!version && versionId !== 'stable' && versionId !== 'latest') {
-        const fallbackVersion = pkg.versions.find(v => v.id === 'stable' || v.id === 'latest') || pkg.versions[0];
-        version = {
-          id: versionId,
-          label: versionId,
-          macCommand: fallbackVersion?.macCommand || '',
-          linuxCommand: fallbackVersion?.linuxCommand || '',
-        };
-      }
+      lines.push(`# ── [${idx + 1}/${packages.length}] ${pkg.name}${versionLabel} ${'─'.repeat(Math.max(0, 44 - pkg.name.length - versionLabel.length))}`);
+      lines.push(`log "Installing ${pkg.name}${versionLabel}..."`);
 
-      if (!version) return;
+      const installCmd = resolveCommand(pkg, os);
 
-      const checkCommand = getCheckCommand(pkg.id);
-      lines.push(`# Installing ${pkg.name}${version.label !== 'Latest' && version.label !== 'Stable' ? ` (${version.label})` : ''}`);
-
-      let installCmd = os === 'macos' ? version.macCommand : version.linuxCommand;
-
-      const template = os === 'macos' ? pkg.macosCommandTemplate : pkg.linuxCommandTemplate;
-      if (template && versionId !== 'latest' && versionId !== 'stable') {
-        const v = versionId;
-        const v_no_v = v.startsWith('v') ? v.substring(1) : v;
-        const v_major = v_no_v.split('.')[0];
-        installCmd = template
-          .replaceAll('${VERSION}', v)
-          .replaceAll('${VERSION_NO_V}', v_no_v)
-          .replaceAll('${VERSION_MAJOR}', v_major);
-      }
-
-      if (installCmd.trim().startsWith('#')) {
-        lines.push(`echo "⚠️  ${pkg.name} is not available on ${os.toUpperCase()}"`);
-      } else if (checkCommand) {
-        lines.push(`if ! command -v ${checkCommand} &> /dev/null; then`);
-        lines.push(`    echo "→ Installing ${pkg.name}..."`);
-        lines.push(`    ${installCmd}`);
-        lines.push('else');
-        lines.push(`    echo "✓ ${pkg.name} already installed, skipping."`);
-        lines.push('fi');
+      if (!installCmd || installCmd.trim().startsWith('#')) {
+        lines.push(`warn "${pkg.name} is not available on ${os.toUpperCase()} — skipping"`);
       } else {
-        lines.push(`echo "→ Installing ${pkg.name}..."`);
-        lines.push(installCmd);
+        const checkCmd = getCheckCommand(pkg.id);
+        if (checkCmd) {
+          lines.push(`if command -v ${checkCmd} &>/dev/null; then`);
+          lines.push(`  ok "${pkg.name} already installed — skipping"`);
+          lines.push('else');
+          // Indent the install command
+          installCmd.split('\n').forEach((line) => {
+            lines.push(`  ${line}`);
+          });
+          lines.push(`  ok "${pkg.name}${versionLabel} installed"`);
+          lines.push('fi');
+        } else {
+          lines.push(installCmd);
+          lines.push(`ok "${pkg.name}${versionLabel} done"`);
+        }
       }
 
       lines.push('');
     });
   }
 
+  // ── Footer ─────────────────────────────────────────────
   lines.push('echo ""');
-  lines.push('echo "================================================"');
-  lines.push('echo "  System Ready. Welcome to your new machine!"');
-  lines.push('echo "================================================"');
+  lines.push('echo -e "${GREEN}╔══════════════════════════════════════════════════╗${RESET}"');
+  lines.push('echo -e "${GREEN}║      ✓  Setup complete. Happy coding! 🚀         ║${RESET}"');
+  lines.push('echo -e "${GREEN}╚══════════════════════════════════════════════════╝${RESET}"');
   lines.push('echo ""');
-  lines.push(`echo "OS: ${os.toUpperCase()}"`);
-  lines.push(`echo "Shell: ${shell}"`);
-  lines.push(`echo "Packages installed: ${packages.length}"`);
+  lines.push(`echo "  OS       : ${os.toUpperCase()}"`);
+  lines.push(`echo "  Shell    : ${shell}"`);
+  lines.push(`echo "  Packages : ${packages.length} installed"`);
   lines.push('echo ""');
-
-  if (needsFlatpak) {
-    lines.push('echo "💡 Note: Some packages were installed via Flatpak"');
-    lines.push('echo "   You may need to restart for Flatpak apps to appear in your menu"');
-    lines.push('echo ""');
-  }
-
-  lines.push('echo "Enjoy coding! 🚀"');
 
   return lines.join('\n');
 }
 
-function getCheckCommand(pkgId: string): string | null {
-  const checkCommands: Record<string, string> = {
-    // IDEs
-    'vscode': 'code',
-    'cursor': 'cursor',
-    'zed': 'zed',
-    'vim': 'vim',
-    'intellij': 'idea',
+/** Generate a macOS Brewfile */
+export function generateBrewfile(packages: Package[]): string {
+  const lines: string[] = [];
+  lines.push('# Brewfile generated by SudoStart');
+  lines.push(`# Date: ${new Date().toISOString().split('T')[0]}`);
+  lines.push('');
 
-    // Languages & Runtimes
-    'nvm': 'nvm',
-    'nodejs': 'node',
-    'npm': 'npm',
-    'python3': 'python3',
-    'ruby': 'ruby',
-    'php': 'php',
-    'kotlin': 'kotlinc',
-    'rust': 'rustc',
-    'go': 'go',
-    'java': 'java',
-    'cpp': 'g++',
+  const taps: string[] = [];
+  const brews: string[] = [];
+  const casks: string[] = [];
 
-    // Package Managers
-    'pnpm': 'pnpm',
-    'yarn': 'yarn',
-    'pyenv': 'pyenv',
-    'rbenv': 'rbenv',
-    'sdkman': 'sdk',
+  packages.forEach((pkg) => {
+    const versionId = pkg.selectedVersion || pkg.defaultVersion;
+    const entry = pkg.versions.find((v) => v.id === versionId) ?? pkg.versions[0];
+    if (!entry) return;
+    const cmd = entry.macCommand;
 
-    // Build Tools
-    'make': 'make',
-    'cmake': 'cmake',
-    'gradle': 'gradle',
-    'maven': 'mvn',
+    if (cmd.includes('brew install --cask')) {
+      const name = cmd.replace(/brew install --cask\s+/, '').trim();
+      casks.push(`cask "${name}"`);
+    } else if (cmd.includes('brew tap')) {
+      const tap = cmd.replace(/brew tap\s+/, '').trim();
+      taps.push(`tap "${tap}"`);
+    } else if (cmd.includes('brew install')) {
+      const name = cmd.replace(/brew install\s+/, '').trim();
+      brews.push(`brew "${name}"`);
+    }
+  });
 
-    // Containers
-    'docker': 'docker',
-    'docker-desktop': 'docker',
-    'podman': 'podman',
-    'kubectl': 'kubectl',
-    'minikube': 'minikube',
+  if (taps.length) {
+    lines.push('# Taps');
+    taps.forEach((t) => lines.push(t));
+    lines.push('');
+  }
+  if (brews.length) {
+    lines.push('# CLI tools');
+    brews.forEach((b) => lines.push(b));
+    lines.push('');
+  }
+  if (casks.length) {
+    lines.push('# GUI apps');
+    casks.forEach((c) => lines.push(c));
+    lines.push('');
+  }
 
-    // Cloud CLIs
-    'aws-cli': 'aws',
-    'gcloud': 'gcloud',
-    'azure-cli': 'az',
-
-    // Tools
-    'git': 'git',
-    'curl': 'curl',
-    'wget': 'wget',
-    'jq': 'jq',
-    'htop': 'htop',
-    'tmux': 'tmux',
-    'openssh': 'ssh',
-    'ngrok': 'ngrok',
-    'zsh': 'zsh',
-    'oh-my-zsh': 'omz',
-    'terraform': 'terraform',
-    'ansible': 'ansible',
-    'github-cli': 'gh',
-    'postman': 'postman',
-    'insomnia': 'insomnia',
-
-    // Databases
-    'postgresql': 'psql',
-    'mysql': 'mysql',
-    'mariadb': 'mariadb',
-    'sqlite3': 'sqlite3',
-    'redis': 'redis-cli',
-    'mongodb': 'mongosh',
-
-    // Terminals
-    'warp': 'warp-terminal',
-    'alacritty': 'alacritty',
-    'kitty': 'kitty',
-    'hyper': 'hyper',
-    'ghostty': 'ghostty',
-
-    // Communication
-    'zoom': 'zoom',
-    'telegram': 'telegram-desktop',
-
-    // Productivity
-    'bitwarden': 'bitwarden',
-    'raycast': 'raycast',
-
-    // Mobile
-    'flutter': 'flutter',
-  };
-
-  return checkCommands[pkgId] || null;
+  return lines.join('\n');
 }
 
-export function downloadScript(script: string, filename: string = 'sudo-start-setup.sh') {
+/** Estimate install time in minutes */
+export function estimateInstallTime(packages: Package[]): number {
+  const weights: Record<string, number> = {
+    ide: 3,
+    browser: 2,
+    runtime: 4,
+    container: 5,
+    database: 4,
+    'data-science': 6,
+    mobile: 8,
+    'game-dev': 10,
+    'desktop-dev': 5,
+    framework: 2,
+    tool: 1,
+    utility: 1,
+    terminal: 2,
+    'package-manager': 1,
+    'build-tool': 2,
+    cloud: 2,
+    devops: 3,
+    communication: 2,
+    productivity: 2,
+    'web-server': 2,
+  };
+  const total = packages.reduce((sum, p) => sum + (weights[p.category] ?? 2), 0);
+  return Math.max(1, total);
+}
+
+/** Rough disk-space estimate in MB */
+export function estimateDiskSpace(packages: Package[]): number {
+  const weights: Record<string, number> = {
+    ide: 400,
+    browser: 300,
+    runtime: 200,
+    container: 500,
+    database: 300,
+    'data-science': 800,
+    mobile: 1500,
+    'game-dev': 2000,
+    'desktop-dev': 400,
+    framework: 100,
+    tool: 30,
+    utility: 20,
+    terminal: 80,
+    'package-manager': 50,
+    'build-tool': 100,
+    cloud: 80,
+    devops: 150,
+    communication: 200,
+    productivity: 150,
+    'web-server': 80,
+  };
+  return packages.reduce((sum, p) => sum + (weights[p.category] ?? 100), 0);
+}
+
+function getCheckCommand(pkgId: string): string | null {
+  const map: Record<string, string> = {
+    vscode: 'code', cursor: 'cursor', zed: 'zed', vim: 'vim', intellij: 'idea',
+    nvm: 'nvm', nodejs: 'node', npm: 'npm', python3: 'python3',
+    ruby: 'ruby', php: 'php', kotlin: 'kotlinc', rust: 'rustc',
+    go: 'go', java: 'java', cpp: 'g++',
+    pnpm: 'pnpm', yarn: 'yarn', pyenv: 'pyenv', rbenv: 'rbenv', sdkman: 'sdk',
+    make: 'make', cmake: 'cmake', gradle: 'gradle', maven: 'mvn',
+    docker: 'docker', 'docker-desktop': 'docker', podman: 'podman',
+    kubectl: 'kubectl', minikube: 'minikube',
+    'aws-cli': 'aws', gcloud: 'gcloud', 'azure-cli': 'az',
+    git: 'git', curl: 'curl', wget: 'wget', jq: 'jq', htop: 'htop',
+    tmux: 'tmux', openssh: 'ssh', ngrok: 'ngrok', zsh: 'zsh',
+    'oh-my-zsh': 'omz', terraform: 'terraform', ansible: 'ansible',
+    'github-cli': 'gh', postman: 'postman', insomnia: 'insomnia',
+    postgresql: 'psql', mysql: 'mysql', mariadb: 'mariadb',
+    sqlite3: 'sqlite3', redis: 'redis-cli', mongodb: 'mongosh',
+    warp: 'warp-terminal', alacritty: 'alacritty', kitty: 'kitty',
+    hyper: 'hyper', ghostty: 'ghostty',
+    zoom: 'zoom', telegram: 'telegram-desktop',
+    bitwarden: 'bitwarden', raycast: 'raycast', flutter: 'flutter',
+  };
+  return map[pkgId] ?? null;
+}
+
+export function downloadScript(script: string, filename = 'sudo-start-setup.sh') {
   const blob = new Blob([script], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }

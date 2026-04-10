@@ -1,97 +1,174 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { MessageSquare, ShoppingCart, Terminal, Search } from 'lucide-react';
-import { useState } from 'react';
+import { MessageSquare, ShoppingCart, Terminal, Search, Layers, Upload, Download as DownloadIcon } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { BucketModal } from './bucket-modal';
 import { SearchBar } from './search-bar';
+import { PresetsModal } from './presets-modal';
 
 export function Navbar() {
-    const { os, bucket, toggleChat } = useStore();
-    const [isBucketOpen, setIsBucketOpen] = useState(false);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { os, bucket, toggleChat, exportBucket, importBucket } = useStore();
+  const [isBucketOpen, setIsBucketOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isPresetsOpen, setIsPresetsOpen] = useState(false);
+  const [importError, setImportError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    return (
-        <>
-            {isSearchOpen && <SearchBar onClose={() => setIsSearchOpen(false)} />}
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const success = importBucket(ev.target?.result as string);
+      if (!success) {
+        setImportError(true);
+        setTimeout(() => setImportError(false), 3000);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be re-imported
+    e.target.value = '';
+  };
 
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-                <div className="max-w-7xl mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between gap-4">
-                        {/* Logo & Title */}
-                        <div className="flex items-center gap-3">
-                            <Terminal className="w-8 h-8 terminal-text" />
-                            <div>
-                                <h1 className="text-xl font-bold terminal-text">SudoStart</h1>
-                                <p className="text-xs text-muted-foreground">
-                                    {os?.toUpperCase()} Package Manager
-                                </p>
-                            </div>
-                        </div>
+  // Keyboard shortcut: Cmd+K / Ctrl+K
+  useState(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', handler);
+      return () => window.removeEventListener('keydown', handler);
+    }
+  });
 
-                        {/* Search Bar (desktop) */}
-                        <button
-                            onClick={() => setIsSearchOpen(true)}
-                            className="hidden md:flex flex-1 max-w-sm items-center gap-3 px-4 py-2 rounded-lg
-                                bg-muted border border-border hover:border-primary/50 transition-all
-                                text-muted-foreground text-sm font-mono"
-                        >
-                            <Search className="w-4 h-4 shrink-0" />
-                            <span>Search packages...</span>
-                            <kbd className="ml-auto px-1.5 py-0.5 text-xs rounded border border-border">⌘K</kbd>
-                        </button>
+  return (
+    <>
+      {isSearchOpen && <SearchBar onClose={() => setIsSearchOpen(false)} />}
+      {isPresetsOpen && <PresetsModal onClose={() => setIsPresetsOpen(false)} />}
 
-                        {/* Right Actions */}
-                        <div className="flex items-center gap-3">
-                            {/* Search icon (mobile) */}
-                            <button
-                                onClick={() => setIsSearchOpen(true)}
-                                className="md:hidden flex items-center gap-2 px-3 py-2 rounded-lg border border-border
-                                    hover:border-primary/50 transition-all"
-                                title="Search packages"
-                            >
-                                <Search className="w-5 h-5" />
-                            </button>
+      {/* Hidden file input for import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        className="hidden"
+        onChange={handleImport}
+      />
 
-                            {/* Bucket Button */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setIsBucketOpen(!isBucketOpen)}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-border
-                                        hover:border-primary/50 transition-all terminal-card"
-                                >
-                                    <ShoppingCart className="w-5 h-5" />
-                                    <span className="hidden sm:inline">Bucket</span>
-                                    {bucket.length > 0 && (
-                                        <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary 
-                                            text-primary-foreground text-xs font-bold flex items-center justify-center
-                                            terminal-glow">
-                                            {bucket.length}
-                                        </span>
-                                    )}
-                                </button>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center gap-3">
+            {/* Logo */}
+            <div className="flex items-center gap-2 shrink-0">
+              <Terminal className="w-7 h-7 terminal-text" />
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-bold terminal-text leading-tight">SudoStart</h1>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  {os?.toUpperCase() ?? 'Package'} Manager
+                </p>
+              </div>
+            </div>
 
-                                {isBucketOpen && (
-                                    <BucketModal onClose={() => setIsBucketOpen(false)} />
-                                )}
-                            </div>
+            {/* Search Bar (desktop) */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="hidden md:flex flex-1 max-w-sm items-center gap-3 px-4 py-2 rounded-lg
+                bg-muted border border-border hover:border-primary/50 transition-all
+                text-muted-foreground text-sm font-mono"
+            >
+              <Search className="w-4 h-4 shrink-0" />
+              <span>Search packages...</span>
+              <kbd className="ml-auto px-1.5 py-0.5 text-xs rounded border border-border">⌘K</kbd>
+            </button>
 
-                            {/* AI Chat Button */}
-                            <button
-                                onClick={toggleChat}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary
-                                    terminal-text hover:terminal-glow transition-all"
-                            >
-                                <MessageSquare className="w-5 h-5" />
-                                <span className="hidden sm:inline">Ask Root</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            {/* Spacer */}
+            <div className="flex-1" />
 
-            {/* Spacer for fixed navbar */}
-            <div className="h-20" />
-        </>
-    );
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              {/* Search (mobile) */}
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="md:hidden p-2 rounded-lg border border-border hover:border-primary/50 transition-all"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+
+              {/* Presets */}
+              <button
+                onClick={() => setIsPresetsOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border
+                  hover:border-primary/50 transition-all text-sm"
+                title="Starter presets"
+              >
+                <Layers className="w-4 h-4" />
+                <span className="hidden lg:inline">Presets</span>
+              </button>
+
+              {/* Import */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border transition-all text-sm ${
+                  importError
+                    ? 'border-destructive text-destructive'
+                    : 'border-border hover:border-primary/50'
+                }`}
+                title="Import bucket from JSON"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="hidden lg:inline">{importError ? 'Invalid JSON' : 'Import'}</span>
+              </button>
+
+              {/* Export */}
+              <button
+                onClick={exportBucket}
+                disabled={bucket.length === 0}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border
+                  hover:border-primary/50 transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                title="Export bucket as JSON"
+              >
+                <DownloadIcon className="w-4 h-4" />
+                <span className="hidden lg:inline">Export</span>
+              </button>
+
+              {/* Bucket */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsBucketOpen(!isBucketOpen)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-border
+                    hover:border-primary/50 transition-all terminal-card"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span className="hidden sm:inline text-sm">Bucket</span>
+                  {bucket.length > 0 && (
+                    <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-primary
+                      text-primary-foreground text-xs font-bold flex items-center justify-center terminal-glow">
+                      {bucket.length}
+                    </span>
+                  )}
+                </button>
+                {isBucketOpen && <BucketModal onClose={() => setIsBucketOpen(false)} />}
+              </div>
+
+              {/* AI Chat */}
+              <button
+                onClick={toggleChat}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-primary
+                  terminal-text hover:terminal-glow transition-all text-sm"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span className="hidden sm:inline">Root AI</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="h-[60px]" />
+    </>
+  );
 }

@@ -1,13 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import Groq from 'groq-sdk';
 
 let groq: Groq | null = null;
 
 function getGroqClient() {
   if (!groq) {
-    if (!process.env.GROQ_API_KEY) {
-      throw new Error('GROQ_API_KEY is not defined');
-    }
+    if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY is not defined');
     groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
   return groq;
@@ -15,17 +13,18 @@ function getGroqClient() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = await request.json();
+    const { messages, bucketContext } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: 'Invalid request: messages array is required' },
-        { status: 400 }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid messages' }), { status: 400 });
     }
 
+    const bucketSection = bucketContext && bucketContext.length > 0
+      ? `\n\nCurrent bucket (already selected by the user): ${bucketContext.join(', ')}.`
+      : '\n\nCurrent bucket: empty.';
+
     const systemPrompt = {
-      role: 'system',
+      role: 'system' as const,
       content: `You are "Root", an expert Unix system administrator and helpful AI assistant for the SudoStart application.
 
 Your purpose is to help users set up their development environment by recommending software packages and tools.
@@ -39,10 +38,9 @@ The JSON Schema is:
     "packageIds": ["id1", "id2", "id3:version"]
   }
 }
-The "action" field is OPTIONAL. Only include it if the user explicitly asks to add or remove packages, or strongly recommends a setup they accepted.
+The "action" field is OPTIONAL. Only include it if the user explicitly asks to add or remove packages.
 
 Full Package Catalog:
-
 IDEs: windsurf, cursor, zed, vscode, vim, intellij
 Browsers: zen-browser, arc, vivaldi, brave, google-chrome, microsoft-edge, firefox
 Runtimes: nvm, nodejs, npm, python3, ruby, php, kotlin, rust, go, java, cpp
@@ -63,50 +61,57 @@ Utilities: jq, wget, htop, tmux, openssh, ngrok, insomnia
 Communication: zoom, microsoft-teams, telegram, slack, discord
 Productivity: rectangle, raycast, 1password, bitwarden, docker-desktop
 Tools: git, curl, zsh, oh-my-zsh, terraform, ansible, github-cli, postman, figma
+${bucketSection}
 
-Example interactions:
-User: "I want to do Rust backend dev"
-Assistant: { "response": "For Rust backend dev, I recommend Rust, Zed (great Rust support), and essential CLI tools.", "action": { "type": "add", "packageIds": ["rust", "zed", "git", "curl"] } }
-
-User: "Set up a Node.js environment"
-Assistant: { "response": "Here's a solid Node.js setup with version management.", "action": { "type": "add", "packageIds": ["nvm", "nodejs", "npm", "pnpm"] } }
-
-User: "I need cloud tools for AWS"
-Assistant: { "response": "Adding the AWS CLI for you.", "action": { "type": "add", "packageIds": ["aws-cli"] } }
-
-User: "Set up my shell nicely"
-Assistant: { "response": "Zsh + Oh My Zsh is the gold standard shell setup.", "action": { "type": "add", "packageIds": ["zsh", "oh-my-zsh"] } }
-
-User: "What do I need for Python data science?"
-Assistant: { "response": "Here's the full Python data science stack.", "action": { "type": "add", "packageIds": ["python3", "pyenv", "jupyter", "pandas", "numpy", "matplotlib", "tensorflow"] } }
-
-User: "Remove docker please"
-Assistant: { "response": "Removing Docker from your bucket.", "action": { "type": "remove", "packageIds": ["docker"] } }
-
-User: "Hi"
-Assistant: { "response": "Hello! I'm Root 🌳 What are you building today?" }
-
-Keep responses short and terminal-like. Be opinionated and helpful.`,
+Keep responses short and terminal-like. Be opinionated and helpful. Always be aware of what's already in the bucket.`,
     };
 
     const client = getGroqClient();
-    const chatCompletion = await client.chat.completions.create({
+    const stream = await client.chat.completions.create({
       messages: [systemPrompt, ...messages],
       model: 'llama-3.3-70b-versatile',
       temperature: 0.7,
       max_tokens: 1024,
-      top_p: 1,
-      stream: false,
+      stream: true,
     });
 
-    const assistantMessage = chatCompletion.choices[0]?.message?.content || 'No response generated';
+    // Stream the response as Server-Sent Events
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          let fullContent = '';
+          for await (const chunk of stream) {
+            const delta = chunk.choices[0]?.delta?.content ?? '';
+            if (delta) {
+              fullContent += delta;
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ delta, done: false })}\n\n`)
+              );
+            }
+          }
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ delta: '', done: true, full: fullContent })}\n\n`)
+          );
+          controller.close();
+        } catch (err) {
+          controller.error(err);
+        }
+      },
+    });
 
-    return NextResponse.json({ message: assistantMessage });
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+    });
   } catch (error) {
-    console.error('Error in chat API:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+    console.error('Chat API error:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500 }
+    );
   }
 }

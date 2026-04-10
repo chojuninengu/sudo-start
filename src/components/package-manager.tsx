@@ -3,31 +3,18 @@
 import { useStore } from '@/lib/store';
 import { appCatalog, getAppsForOS } from '@/lib/apps';
 import { Package } from '@/types';
-import { Plus, Check, ChevronDown, AlertCircle, Wand2 } from 'lucide-react';
+import { Plus, Check, ChevronDown, AlertCircle, Wand2, Copy, Clock, HardDrive } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { Navbar } from './navbar';
+import { DependencyPanel } from './dependency-panel';
+import { estimateInstallTime, estimateDiskSpace } from '@/lib/script-generator';
 
 const categoryIcons: Record<string, string> = {
-  all: '🗂️',
-  ide: '📝',
-  browser: '🌐',
-  tool: '🔧',
-  runtime: '⚙️',
-  container: '📦',
-  database: '💾',
-  terminal: '💻',
-  framework: '🧱',
-  devops: '♾️',
-  'data-science': '🧪',
-  mobile: '📱',
-  'game-dev': '🎮',
-  'desktop-dev': '🖥️',
-  'web-server': '🌍',
-  'package-manager': '📌',
-  'build-tool': '🔨',
-  cloud: '☁️',
-  utility: '🛠️',
-  communication: '💬',
+  all: '🗂️', ide: '📝', browser: '🌐', tool: '🔧', runtime: '⚙️',
+  container: '📦', database: '💾', terminal: '💻', framework: '🧱',
+  devops: '♾️', 'data-science': '🧪', mobile: '📱', 'game-dev': '🎮',
+  'desktop-dev': '🖥️', 'web-server': '🌍', 'package-manager': '📌',
+  'build-tool': '🔨', cloud: '☁️', utility: '🛠️', communication: '💬',
   productivity: '🚀',
 };
 
@@ -57,30 +44,56 @@ export function PackageManager() {
 
   const categories = ['all', ...Array.from(new Set(availableApps.map((p) => p.category)))];
 
+  // Stats
+  const estTime = estimateInstallTime(bucket);
+  const estDisk = estimateDiskSpace(bucket);
+  const diskLabel = estDisk >= 1000 ? `${(estDisk / 1000).toFixed(1)} GB` : `${estDisk} MB`;
+
   return (
     <div className="min-h-screen scan-lines relative">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-6 py-6 space-y-5">
         {/* Header */}
-        <div className="text-center">
-          <h2 className="text-4xl font-bold terminal-text">SudoStart Package Manager</h2>
-          <div className="flex justify-center items-center gap-4 mt-2">
-            <p className="text-muted-foreground">
-              Select from the curated list of packages below to generate your script.
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold terminal-text">Package Catalog</h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Select tools to include in your setup script
             </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Bucket stats */}
+            {bucket.length > 0 && (
+              <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono border border-border rounded-lg px-3 py-2">
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  ~{estTime}m
+                </span>
+                <span className="w-px h-3 bg-border" />
+                <span className="flex items-center gap-1">
+                  <HardDrive className="w-3 h-3" />
+                  ~{diskLabel}
+                </span>
+              </div>
+            )}
             <button
               onClick={addDefaultAppsToBucket}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-primary/50 text-primary hover:bg-primary/10 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed
+                border-primary/50 text-primary hover:bg-primary/10 transition-all text-sm"
             >
               <Wand2 className="w-4 h-4" />
-              <span>Add Defaults</span>
+              Add Defaults
             </button>
           </div>
         </div>
 
-        {/* Category Filters */}
-        <div className="sticky top-20 z-30 py-4 bg-background/80 backdrop-blur-sm -mx-6 px-6 flex gap-2 flex-wrap justify-center border-b border-border/50">
+        {/* Dependency panel */}
+        <DependencyPanel bucket={bucket} os={os} />
+
+        {/* Category filters */}
+        <div className="sticky top-[60px] z-30 py-3 bg-background/90 backdrop-blur-sm -mx-6 px-6
+          flex gap-2 flex-wrap border-b border-border/50">
           {categories.map((cat) => (
             <button
               key={cat}
@@ -111,7 +124,7 @@ export function PackageManager() {
 
         {filteredPackages.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-            <p>No packages found in this category.</p>
+            No packages in this category for your OS.
           </div>
         )}
       </div>
@@ -133,24 +146,26 @@ function PackageCard({
   const [selectedVersion, setSelectedVersion] = useState(pkg.defaultVersion);
   const [dynamicVersions, setDynamicVersions] = useState<string[]>([]);
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const dynamicVersionTools = [
-    'nodejs', 'python3', 'rust', 'go', 'docker', 'postgresql', 'redis', 'mongodb', 'flutter',
-    'vscode', 'zed', 'terraform', 'ansible', 'github-cli', 'podman', 'kubectl', 'minikube',
-    'jenkins', 'prometheus', 'docker-compose', 'react', 'vue', 'angular', 'nextjs',
-    'django', 'flask', 'express', 'nginx', 'godot', 'blender', 'electron', 'tauri', 'react-native',
+    'nodejs', 'python3', 'rust', 'go', 'docker', 'postgresql', 'redis', 'mongodb',
+    'flutter', 'vscode', 'zed', 'terraform', 'ansible', 'github-cli', 'podman',
+    'kubectl', 'minikube', 'jenkins', 'prometheus', 'docker-compose', 'react',
+    'vue', 'angular', 'nextjs', 'django', 'flask', 'express', 'nginx', 'godot',
+    'blender', 'electron', 'tauri', 'react-native',
   ];
-  const supportsDynamicVersions = dynamicVersionTools.includes(pkg.id);
+  const supportsDynamic = dynamicVersionTools.includes(pkg.id);
 
   useEffect(() => {
-    if (!supportsDynamicVersions) return;
+    if (!supportsDynamic) return;
     const fetchVersions = async () => {
       setIsLoadingVersions(true);
       try {
         const toolId = pkg.id === 'python3' ? 'python' : pkg.id;
-        const response = await fetch(`/api/versions?tool=${toolId}`);
-        const data = await response.json();
-        if (data.versions && data.versions.length > 0) {
+        const res = await fetch(`/api/versions?tool=${toolId}`);
+        const data = await res.json();
+        if (data.versions?.length > 0) {
           setDynamicVersions(data.versions);
           setSelectedVersion(data.versions[0]);
         } else {
@@ -163,16 +178,43 @@ function PackageCard({
       }
     };
     fetchVersions();
-  }, [pkg.id, supportsDynamicVersions]);
-
-  const handleAdd = () => onAddToBucket(pkg, selectedVersion);
+  }, [pkg.id, supportsDynamic]);
 
   const isAvailable = os ? pkg.platforms[os] : true;
 
   const versionsToShow =
-    supportsDynamicVersions && dynamicVersions.length > 0
+    supportsDynamic && dynamicVersions.length > 0
       ? dynamicVersions.map((v) => ({ id: v, label: v }))
       : pkg.versions.map((v) => ({ id: v.id, label: v.label }));
+
+  // Build the preview install command for the copy button
+  const getPreviewCommand = () => {
+    if (!os) return '';
+    const versionEntry = pkg.versions.find((v) => v.id === selectedVersion);
+    const template = os === 'macos' ? pkg.macosCommandTemplate : pkg.linuxCommandTemplate;
+    const isGeneric = ['stable', 'latest'].includes(selectedVersion);
+
+    if (template && !isGeneric) {
+      const v = selectedVersion.startsWith('v') ? selectedVersion : `v${selectedVersion}`;
+      const v_no_v = selectedVersion.startsWith('v') ? selectedVersion.slice(1) : selectedVersion;
+      const v_major = v_no_v.split('.')[0];
+      return template
+        .replaceAll('${VERSION}', v)
+        .replaceAll('${VERSION_NO_V}', v_no_v)
+        .replaceAll('${VERSION_MAJOR}', v_major);
+    }
+    return versionEntry
+      ? (os === 'macos' ? versionEntry.macCommand : versionEntry.linuxCommand)
+      : '';
+  };
+
+  const handleCopyCommand = async () => {
+    const cmd = getPreviewCommand();
+    if (!cmd) return;
+    await navigator.clipboard.writeText(cmd);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div
@@ -182,26 +224,27 @@ function PackageCard({
     >
       <div className="flex-1">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold terminal-text">{pkg.name}</h3>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-lg font-bold terminal-text">{pkg.name}</h3>
               {!isAvailable && (
-                <span className="text-xs px-2 py-1 rounded bg-destructive/20 text-destructive border border-destructive flex items-center gap-1">
+                <span className="text-xs px-2 py-0.5 rounded bg-destructive/20 text-destructive border border-destructive flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
                   {os === 'linux' ? 'Mac Only' : 'Linux Only'}
                 </span>
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-1">{pkg.description}</p>
-            <span className="inline-block mt-2 text-xs px-2 py-1 rounded border border-border capitalize">
+            <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded border border-border capitalize">
               {categoryIcons[pkg.category] || '📁'} {pkg.category.replace('-', ' ')}
             </span>
           </div>
         </div>
 
-        {(versionsToShow.length > 1 || supportsDynamicVersions) && (
-          <div className="space-y-2 mt-4">
-            <label className="text-sm text-muted-foreground flex items-center gap-2">
+        {/* Version selector */}
+        {(versionsToShow.length > 1 || supportsDynamic) && (
+          <div className="mt-4 space-y-1.5">
+            <label className="text-xs text-muted-foreground flex items-center gap-2">
               Version:
               {isLoadingVersions && (
                 <span className="text-xs terminal-text animate-pulse">fetching...</span>
@@ -211,53 +254,61 @@ function PackageCard({
               <select
                 value={selectedVersion}
                 onChange={(e) => {
-                  const newVersion = e.target.value;
-                  setSelectedVersion(newVersion);
-                  if (isInBucket) onAddToBucket(pkg, newVersion);
+                  const v = e.target.value;
+                  setSelectedVersion(v);
+                  if (isInBucket) onAddToBucket(pkg, v);
                 }}
-                className="w-full px-3 py-2 rounded-lg bg-input border border-border text-foreground appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full px-3 py-2 rounded-lg bg-input border border-border text-foreground
+                  appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring text-sm"
                 disabled={!isAvailable || isLoadingVersions}
               >
-                {versionsToShow.map((version) => (
-                  <option key={version.id} value={version.id}>
-                    {version.label}
-                  </option>
+                {versionsToShow.map((v) => (
+                  <option key={v.id} value={v.id}>{v.label}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-60" />
             </div>
           </div>
         )}
       </div>
 
-      <button
-        onClick={handleAdd}
-        disabled={isInBucket || !isAvailable}
-        className={`w-full py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 mt-4 ${
-          isInBucket
-            ? 'bg-primary/20 text-primary cursor-not-allowed'
-            : !isAvailable
-            ? 'bg-muted text-muted-foreground cursor-not-allowed'
-            : 'bg-primary text-primary-foreground hover:bg-primary/90 terminal-glow'
-        }`}
-      >
-        {isInBucket ? (
-          <>
-            <Check className="w-4 h-4" />
-            Added to Root
-          </>
-        ) : !isAvailable ? (
-          <>
-            <AlertCircle className="w-4 h-4" />
-            Not Available on {os?.toUpperCase()}
-          </>
-        ) : (
-          <>
-            <Plus className="w-4 h-4" />
-            Add to Root
-          </>
+      {/* Actions */}
+      <div className="flex gap-2 mt-4">
+        <button
+          onClick={() => onAddToBucket(pkg, selectedVersion)}
+          disabled={isInBucket || !isAvailable}
+          className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 text-sm ${
+            isInBucket
+              ? 'bg-primary/20 text-primary cursor-not-allowed'
+              : !isAvailable
+              ? 'bg-muted text-muted-foreground cursor-not-allowed'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90 terminal-glow'
+          }`}
+        >
+          {isInBucket ? (
+            <><Check className="w-4 h-4" /> In Bucket</>
+          ) : !isAvailable ? (
+            <><AlertCircle className="w-4 h-4" /> Unavailable</>
+          ) : (
+            <><Plus className="w-4 h-4" /> Add</>
+          )}
+        </button>
+
+        {/* Copy install command */}
+        {isAvailable && os && (
+          <button
+            onClick={handleCopyCommand}
+            title="Copy install command"
+            className="p-2 rounded-lg border border-border hover:border-primary/50 hover:bg-accent
+              transition-all shrink-0"
+          >
+            {copied
+              ? <Check className="w-4 h-4 terminal-text" />
+              : <Copy className="w-4 h-4 text-muted-foreground" />
+            }
+          </button>
         )}
-      </button>
+      </div>
     </div>
   );
 }
